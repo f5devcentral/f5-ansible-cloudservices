@@ -1,0 +1,13 @@
+{
+  "account_id": "a-xxxxxxxxxx",
+  "catalog_id": "c-xxxxxxxxxx",
+  "subscription_id": "s-xxxxxxxxxx",
+  "user_id": "u-xxxxxxxxxx",
+  "service_instance_name": "fqdn.demo.com",
+  "service_type": "waf",
+  "configuration": {
+    "waf_service": {
+      "custom_parameter": true
+    }
+  }
+}

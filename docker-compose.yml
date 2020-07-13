@@ -1,0 +1,17 @@
+version: '3.4'
+
+services:
+  ansible:
+    command: ansible-playbook ./examples/demo.yml -v
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - F5_USERNAME=${F5_USERNAME}
+      - F5_PASSWORD=${F5_PASSWORD}
+    networks:
+      - ansible-net
+
+networks:
+  ansible-net:
+      driver: bridge

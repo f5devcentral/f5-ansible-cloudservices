@@ -1,0 +1,22 @@
+- hosts: localhost
+  collections:
+    - f5devcentral.cloudservices
+  connection: local
+
+  vars:
+    f5_cloudservices:
+      user: "username"
+      password: "pass"
+
+  tasks:
+    - name: Apply SSL Certificate
+      f5_cs_eap_certificate:
+        f5_cloudservices: "{{ f5_cloudservices }}"
+        subscription_id: "s-xxxxxxxxxx"
+        certificate: "{{ lookup('file', './fqdn.cert') }}"
+        private_key: "{{ lookup('file', './fqdn.key') }}"
+        passphrase: "demo_ansible"
+        certificate_chain: "{{ lookup('file', './chain.cert') }}"
+        https_port: 443
+        https_redirect: true
+        update_comment: "update SSL certificate"

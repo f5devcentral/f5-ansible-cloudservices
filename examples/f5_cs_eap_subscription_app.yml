@@ -1,0 +1,115 @@
+- hosts: localhost
+  collections:
+    - f5devcentral.cloudservices
+  connection: local
+
+  vars:
+    f5_cloudservices:
+      user: "username"
+      password: "pass"
+
+  tasks:
+    - name: Create EAP instance
+      f5_cs_eap_subscription_app:
+        f5_cloudservices: "{{ f5_cloudservices }}"
+        service_instance_name: "fqdn.demo.net"
+
+    - name: Fetch EAP instance
+      f5_cs_eap_subscription_app:
+        f5_cloudservices: "{{ f5_cloudservices }}"
+        subscription_id: "s-xxxxxxxxxx"
+        state: "fetch"
+
+    - name: Retire EAP instance
+      f5_cs_eap_subscription_app:
+        f5_cloudservices: "{{ f5_cloudservices }}"
+        subscription_id: "s-xxxxxxxxxx"
+        state: "absent"
+
+    - name: Partial EAP instance update
+      f5_cs_eap_subscription_app:
+        f5_cloudservices: "{{ f5_cloudservices }}"
+        subscription_id: "s-xxxxxxxxxx"
+        patch: true
+        configuration:
+          update_comment: "update EAP subscription"
+          waf_service:
+            policy:
+              compliance_enforcement:
+                enabled: true
+                data_guard:
+                  enabled: true
+
+    - name: Full EAP instance update
+      f5_cs_eap_subscription_app:
+        f5_cloudservices: "{{ f5_cloudservices }}"
+        subscription_id: "s-xxxxxxxxxx"
+        service_instance_name: "fqdn.demo.net"
+        configuration:
+          update_comment: "update EAP subscription"
+          waf_service:
+            application:
+              description: "eap subscription"
+              fqdn: "fqdn.demo.net"
+              http:
+                enabled: true
+                port: 80
+              https:
+                enabled: false
+                port: 443
+                tls:
+                  certificate_id: ""
+              waf_regions:
+                aws:
+                  "us-east-1":
+                    endpoint:
+                      http:
+                        enabled: true
+                        port: 80
+                      ips:
+                        - "127.0.0.1"
+            policy:
+              encoding: "utf-8"
+              compliance_enforcement:
+                enabled: true
+                data_guard:
+                  enabled: true
+                sensitive_parameters:
+                  enabled: false
+              high_risk_attack_mitigation:
+                enabled: false
+                enforcement_mode: "monitoring"
+                allowed_methods:
+                  enabled: false
+                api_compliance_enforcement:
+                  enabled: false
+                disallowed_file_types:
+                  enabled: false
+                  file_types:
+                    - "dll"
+                geolocation_enforcement:
+                  enabled: true
+                  disallowed_country_codes:
+                    - AD
+                http_compliance_enforcement:
+                  enabled: false
+                ip_enforcement:
+                  enabled: true
+                  ips:
+                    - address: "192.168.1.1"
+                      description: "spam"
+                      action: "block"
+                      log: true
+                signature_enforcement:
+                  enabled: false
+              malicious_ip_enforcement:
+                enabled: false
+                enforcement_mode: "monitoring"
+                ip_categories:
+                  - block: true
+                    log: true
+                    name: "mobile_threats"
+              threat_campaigns:
+                enabled: true
+                enforcement_mode: "monitoring"
+                campaigns: []

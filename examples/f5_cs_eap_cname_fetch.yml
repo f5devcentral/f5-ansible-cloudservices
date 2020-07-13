@@ -1,0 +1,16 @@
+- hosts: localhost
+  collections:
+    - f5devcentral.cloudservices
+  connection: local
+
+  vars:
+    f5_cloudservices:
+      user: "username"
+      password: "pass"
+
+  tasks:
+    - name: Fetch CNAME value
+      f5_cs_eap_cname_fetch:
+        f5_cloudservices: "{{ f5_cloudservices }}"
+        subscription_id: "s-xxxxxxxxxx"
+      register: cname

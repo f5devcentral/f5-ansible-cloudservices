@@ -1,0 +1,50 @@
+{
+    "subscription_id": "s-xxxxxxxxxx",
+    "account_id": "a-xxxxxxxxxx",
+    "user_id": "u-xxxxxxxxxx",
+    "catalog_id": "c-xxxxxxxxxx",
+    "service_instance_id": "waf-xxxxxxxxxx",
+    "status": "ACTIVE",
+    "service_instance_name": "fqdn.test.com",
+    "deleted": false,
+    "service_type": "waf",
+    "configuration": {
+        "waf_service": {
+            "application": {
+                "description": "fqdn.test.com",
+                "fqdn": "fqdn.test.com",
+                "http": {
+                    "enabled": true,
+                    "https_redirect": false,
+                    "port": 80
+                },
+                "https": {
+                    "enabled": false,
+                    "port": 8443,
+                    "tls": {
+                        "certificate_id": ""
+                    }
+                },
+                "waf_regions": {
+                    "aws": {
+                        "eu-west-2": {
+                            "endpoint": {
+                                "http": {
+                                    "enabled": true,
+                                    "port": 80
+                                },
+                                "ips": [
+                                    "192.168.1.1"
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "create_time": "2020-06-05T00:39:32.252166Z",
+    "update_time": "2020-06-22T16:09:36.008120Z",
+    "cancel_time": null,
+    "end_time": null
+}
