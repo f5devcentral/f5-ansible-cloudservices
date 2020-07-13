@@ -1,0 +1,51 @@
+- hosts: localhost
+  collections:
+    - f5devcentral.cloudservices
+  connection: local
+
+  vars:
+    f5_cloudservices:
+      user: "username"
+      password: "pass"
+
+  tasks:
+    - name: Update IP Enforcement Rules
+      f5_cs_eap_ip_enforcement:
+        f5_cloudservices: "{{ f5_cloudservices }}"
+        subscription_id: "s-xxxxxxxxxx"
+        ip_enforcement:
+          - address: "192.168.1.1"
+            description: "ip_1"
+            action: "block"
+            log: true
+          - address: "192.168.1.2"
+            action: "allow"
+          - address: "192.168.1.3"
+            log: false
+      register: rules_list
+
+    - name: Append IPs to the Rules
+      f5_cs_eap_ip_enforcement:
+        f5_cloudservices: "{{ f5_cloudservices }}"
+        subscription_id: "s-xxxxxxxxxx"
+        action: "append"
+        ip_enforcement:
+          - address: "192.168.1.1"
+            description: "ip_1"
+            action: "block"
+            log: true
+          - address: "192.168.1.2"
+            action: "allow"
+          - address: "192.168.1.3"
+            log: false
+      register: rules_list
+
+    - name: Exclude IPs from the Rules
+      f5_cs_eap_ip_enforcement:
+        f5_cloudservices: "{{ f5_cloudservices }}"
+        subscription_id: "s-xxxxxxxxxx"
+        action: "exclude"
+        ip_enforcement:
+          - address: "192.168.1.1"
+          - address: "192.168.1.2"
+      register: rules_list

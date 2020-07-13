@@ -1,0 +1,257 @@
+{
+  "account_id": "a-xxxxxxxxxx",
+  "catalog_id": "c-xxxxxxxxxx",
+  "subscription_id": "s-xxxxxxxxxx",
+  "user_id": "u-xxxxxxxxxx",
+  "service_instance_name": "fqdn.demo.com",
+  "service_type": "waf",
+  "status": "ACTIVE",
+  "configuration": {
+    "details": {
+      "CNAMEValue": "waf-xxxxxxxxxx.waf.prd.f5aas.com",
+      "discovery": {
+        "cloudProvider": "aws",
+        "cloudRegion": "us-east-1",
+        "dnsProvider": "",
+        "error": "NO_ERROR",
+        "ipGeolocations": [
+          {
+            "city": "ashburn",
+            "continent": "North America",
+            "country": "united states",
+            "ip": "192.168.1.1",
+            "latitude": 39.0329,
+            "longitude": -77.4866,
+            "region": "virginia"
+          }
+        ],
+        "isHTTP": true,
+        "isHTTPS": false,
+        "metadata": "",
+        "recommendedWafRegion": "us-east-1"
+      },
+      "fqdn": "fqdn.demo.com",
+      "waf_regions": {
+        "aws": {
+          "us-east-1": {
+            "endpoint": {
+              "http": {
+                "enabled": true,
+                "port": 80
+              },
+              "ip_geolocation": {
+                "city": "ashburn",
+                "continent": "North America",
+                "country": "united states",
+                "latitude": 39.032901763916016,
+                "longitude": -77.48660278320312,
+                "region": "virginia"
+              },
+              "ips": [
+                "192.168.1.1"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "waf_service": {
+      "custom_parameter": true,
+      "application": {
+        "description": "fqdn.demo.com",
+        "fqdn": "fqdn.demo.com",
+        "http": {
+          "enabled": true,
+          "port": 80
+        },
+        "https": {
+          "enabled": false,
+          "port": 443,
+          "tls": {
+            "certificate_id": ""
+          }
+        },
+        "waf_regions": {
+          "aws": {
+            "us-east-1": {
+              "endpoint": {
+                "http": {
+                  "port": 80,
+                  "enabled": true
+                },
+                "https": {
+                  "port": 443,
+                  "enabled": false
+                },
+                "ips": [
+                  "192.168.1.1"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "policy": {
+        "compliance_enforcement": {
+          "data_guard": {
+            "cc": true,
+            "enabled": true,
+            "ssn": true
+          },
+          "enabled": true,
+          "sensitive_parameters": {
+            "enabled": true,
+            "parameters": [
+              "cc_id",
+              "creditcard",
+              "passwd",
+              "password"
+            ]
+          }
+        },
+        "encoding": "utf-8",
+        "high_risk_attack_mitigation": {
+          "allowed_methods": {
+            "enabled": true,
+            "methods": [
+              {
+                "name": "GET"
+              },
+              {
+                "name": "POST"
+              },
+              {
+                "name": "HEAD"
+              }
+            ]
+          },
+          "api_compliance_enforcement": {
+            "enabled": true
+          },
+          "disallowed_file_types": {
+            "enabled": true,
+            "file_types": [
+              "back",
+              "bat",
+              "bck",
+              "bin",
+              "cfg",
+              "cmd",
+              "com",
+              "config",
+              "dat",
+              "dll",
+              "eml",
+              "exe",
+              "exe1",
+              "exe_renamed",
+              "hta",
+              "htr",
+              "htw",
+              "ida",
+              "idc",
+              "idq",
+              "ini",
+              "old",
+              "sav",
+              "save"
+            ]
+          },
+          "enabled": true,
+          "enforcement_mode": "monitoring",
+          "geolocation_enforcement": {
+            "disallowed_country_codes": [
+              "CU",
+              "IR",
+              "KP",
+              "LY",
+              "SD",
+              "SY"
+            ],
+            "enabled": true
+          },
+          "http_compliance_enforcement": {
+            "enabled": true
+          },
+          "ip_enforcement": {
+            "enabled": true,
+            "ips": [
+
+            ]
+          },
+          "signature_enforcement": {
+            "enabled": true
+          }
+        },
+        "malicious_ip_enforcement": {
+          "enabled": true,
+          "enforcement_mode": "monitoring",
+          "ip_categories": [
+            {
+              "block": true,
+              "log": true,
+              "name": "mobile_threats"
+            },
+            {
+              "block": true,
+              "log": true,
+              "name": "cloud_services"
+            },
+            {
+              "block": true,
+              "log": true,
+              "name": "anonymous_proxies"
+            },
+            {
+              "block": true,
+              "log": true,
+              "name": "phishing_proxies"
+            },
+            {
+              "block": true,
+              "log": true,
+              "name": "infected_sources"
+            },
+            {
+              "block": true,
+              "log": true,
+              "name": "denial_of_service"
+            },
+            {
+              "block": true,
+              "log": true,
+              "name": "scanners"
+            },
+            {
+              "block": true,
+              "log": true,
+              "name": "bot_nets"
+            },
+            {
+              "block": true,
+              "log": true,
+              "name": "web_attacks"
+            },
+            {
+              "block": true,
+              "log": true,
+              "name": "windows_exploits"
+            },
+            {
+              "block": true,
+              "log": true,
+              "name": "spam_sources"
+            }
+          ]
+        },
+        "threat_campaigns": {
+          "campaigns": [
+
+          ],
+          "enabled": true,
+          "enforcement_mode": "monitoring"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,13 @@
+ansible
+ansible-test
+invoke
+cffi
+pytest
+pytest-xdist
+
+# Test running
+pycodestyle
+flake8
+nose
+virtualenv
+semver

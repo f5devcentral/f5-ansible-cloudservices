@@ -1,0 +1,42 @@
+- hosts: localhost
+  collections:
+    - f5devcentral.cloudservices
+  connection: local
+
+  vars:
+    f5_cloudservices:
+      user: "{{ lookup('env','F5_USERNAME') }}"
+      password: "{{ lookup('env','F5_PASSWORD') }}"
+
+  tasks:
+    - name: Create EAP instance
+      f5_cs_eap_subscription_app:
+        f5_cloudservices: "{{ f5_cloudservices }}"
+        service_instance_name: "au-auction.cloudservicesdemo.net"
+      register: subscription
+
+    - name: Update EAP IP Enforcement Rules
+      f5_cs_eap_ip_enforcement:
+        f5_cloudservices: "{{ f5_cloudservices }}"
+        subscription_id: "{{ subscription.subscription_id }}"
+        ip_enforcement:
+          - description: "hacker-2"
+            address: "192.168.1.2"
+            action: "block"
+            log: true
+          - description: "bot"
+            address: "12.23.34.56"
+            action: "block"
+            log: true
+      register: rules
+
+    - name: Fetch CNAME Value
+      f5_cs_eap_cname_fetch:
+        f5_cloudservices: "{{ f5_cloudservices }}"
+        subscription_id: "{{ subscription.subscription_id }}"
+      register: cname
+
+    - debug:
+        var: cname
+        verbosity: 1
+

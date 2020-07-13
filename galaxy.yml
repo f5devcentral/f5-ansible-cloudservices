@@ -1,0 +1,16 @@
+namespace: f5devcentral
+name: cloudservices
+version: 1.0.0
+readme: README.md
+authors:
+  - Alex Shemyakin
+description: Collection to manage F5 CS objects
+license: GPL-3.0-only
+tags:
+  - f5
+  - cloud
+dependencies: {}
+repository: https://github.com/f5devcentral/f5-ansible-cloudservices
+documentation: https://github.com/f5devcentral/f5-ansible-cloudservices
+homepage: https://github.com/f5devcentral/f5-ansible-cloudservices
+issues: https://github.com/f5devcentral/f5-ansible-cloudservices/issues
