@@ -25,14 +25,12 @@ try:
     from library.modules.f5_cs_eap_subscription_app import ModuleParameters
     from library.modules.f5_cs_eap_subscription_app import ModuleManager
     from library.modules.f5_cs_eap_subscription_app import ArgumentSpec
-    from library.module_utils.cloudservices import HttpRestApi
-    from library.module_utils.cloudservices import HttpConnection
+    from library.module_utils.cloudservices import CloudservicesApi
 except ImportError:
     from ansible_collections.f5devcentral.cloudservices.plugins.modules.f5_cs_eap_subscription_app import ModuleParameters
     from ansible_collections.f5devcentral.cloudservices.plugins.modules.f5_cs_eap_subscription_app import ModuleManager
     from ansible_collections.f5devcentral.cloudservices.plugins.modules.f5_cs_eap_subscription_app import ArgumentSpec
-    from ansible_collections.f5devcentral.cloudservices.plugins.module_utils.cloudservices import HttpRestApi
-    from ansible_collections.f5devcentral.cloudservices.plugins.module_utils.cloudservices import HttpConnection
+    from ansible_collections.f5devcentral.cloudservices.plugins.module_utils.cloudservices import CloudservicesApi
 
 
 fixture_path = os.path.join(os.path.dirname(__file__), 'fixtures')
@@ -62,10 +60,6 @@ class TestParameters(unittest.TestCase):
     def test_module_parameters(self):
         args = dict(
             subscription_id='s-xxxxxxxxxx',
-            f5_cloudservices=dict(
-                user='user',
-                password='password',
-            ),
             account_id='a-xxxxxxxxxx',
             catalog_id='c-xxxxxxxxxx',
             service_instance_name='s_i_n',
@@ -84,8 +78,6 @@ class TestParameters(unittest.TestCase):
         p = ModuleParameters(params=args)
 
         assert p.subscription_id == 's-xxxxxxxxxx'
-        assert p.f5_cloudservices['user'] == 'user'
-        assert p.f5_cloudservices['password'] == 'password'
         assert p.account_id == 'a-xxxxxxxxxx'
         assert p.catalog_id == 'c-xxxxxxxxxx'
         assert p.service_instance_name == 's_i_n'
@@ -119,10 +111,6 @@ class TestSubscriptionAppCreate(unittest.TestCase):
 
     def test_subscription_app_create(self, *args):
         set_module_args(dict(
-            f5_cloudservices=dict(
-                user='user',
-                password='password',
-            ),
             service_instance_name='fqdn.demo.com'
         ))
 
@@ -135,7 +123,8 @@ class TestSubscriptionAppCreate(unittest.TestCase):
         get_user_fake = load_fixture('f5_cs_eap_subscription_app_get_user.json')
         get_subscription_fake = load_fixture('f5_cs_eap_subscription_app_create_get.json')
         activate_subscription_fake = load_fixture('f5_cs_eap_subscription_app_create_activate.json')
-        api_client = HttpRestApi(HttpConnection())
+        connection = Mock()
+        api_client = CloudservicesApi(connection)
         api_client.login = Mock()
 
         api_client.get_catalogs = Mock(return_value=get_catalogs_fake)
@@ -167,10 +156,6 @@ class TestSubscriptionFetch(unittest.TestCase):
 
     def test_subscription_fetch(self, *args):
         set_module_args(dict(
-            f5_cloudservices=dict(
-                user='user',
-                password='password',
-            ),
             state='fetch',
             subscription_id='s-xxxxxxxxxx',
         ))
@@ -181,7 +166,8 @@ class TestSubscriptionFetch(unittest.TestCase):
         )
 
         get_subscription_fake = load_fixture('f5_cs_eap_subscription_app_fetch.json')
-        api_client = HttpRestApi(HttpConnection())
+        connection = Mock()
+        api_client = CloudservicesApi(connection)
         api_client.login = Mock()
 
         api_client.get_subscription_by_id = Mock(return_value=get_subscription_fake)
@@ -211,10 +197,6 @@ class TestSubscriptionRetire(unittest.TestCase):
 
     def test_subscription_retire(self, *args):
         set_module_args(dict(
-            f5_cloudservices=dict(
-                user='user',
-                password='password',
-            ),
             state='absent',
             subscription_id='s-xxxxxxxxxx',
         ))
@@ -224,7 +206,8 @@ class TestSubscriptionRetire(unittest.TestCase):
             supports_check_mode=self.spec.supports_check_mode
         )
 
-        api_client = HttpRestApi(HttpConnection())
+        connection = Mock()
+        api_client = CloudservicesApi(connection)
         api_client.login = Mock()
         api_client.retire_subscription = Mock(side_effect=self.retire_subscription)
 
@@ -247,10 +230,6 @@ class TestSubscriptionBatchUpdate(unittest.TestCase):
 
     def test_subscription_batch_update(self, *args):
         set_module_args(dict(
-            f5_cloudservices=dict(
-                user='user',
-                password='password',
-            ),
             subscription_id='s-xxxxxxxxxx',
             configuration=dict(
                 waf_service=dict(
@@ -265,7 +244,8 @@ class TestSubscriptionBatchUpdate(unittest.TestCase):
         )
 
         get_subscription_fake = load_fixture('f5_cs_eap_subscription_app_update_default.json')
-        api_client = HttpRestApi(HttpConnection())
+        connection = Mock()
+        api_client = CloudservicesApi(connection)
         api_client.login = Mock()
         api_client.update_subscription = Mock(side_effect=self.update_subscription)
         api_client.get_subscription_by_id = Mock(return_value=get_subscription_fake)
@@ -290,10 +270,6 @@ class TestSubscriptionPatchUpdate(unittest.TestCase):
 
     def test_subscription_patch_update(self, *args):
         set_module_args(dict(
-            f5_cloudservices=dict(
-                user='user',
-                password='password',
-            ),
             subscription_id='s-xxxxxxxxxx',
             patch=True,
             configuration=dict(
@@ -309,7 +285,8 @@ class TestSubscriptionPatchUpdate(unittest.TestCase):
         )
 
         get_subscription_fake = load_fixture('f5_cs_eap_subscription_app_update_default.json')
-        api_client = HttpRestApi(HttpConnection())
+        connection = Mock()
+        api_client = CloudservicesApi(connection)
         api_client.login = Mock()
         api_client.update_subscription = Mock(side_effect=self.update_subscription)
         api_client.get_subscription_by_id = Mock(return_value=get_subscription_fake)

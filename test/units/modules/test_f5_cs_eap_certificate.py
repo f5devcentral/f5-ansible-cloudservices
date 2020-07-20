@@ -25,14 +25,12 @@ try:
     from library.modules.f5_cs_eap_certificate import ModuleParameters
     from library.modules.f5_cs_eap_certificate import ModuleManager
     from library.modules.f5_cs_eap_certificate import ArgumentSpec
-    from library.module_utils.cloudservices import HttpRestApi
-    from library.module_utils.cloudservices import HttpConnection
+    from library.module_utils.cloudservices import CloudservicesApi
 except ImportError:
     from ansible_collections.f5devcentral.cloudservices.plugins.modules.f5_cs_eap_certificate import ModuleParameters
     from ansible_collections.f5devcentral.cloudservices.plugins.modules.f5_cs_eap_certificate import ModuleManager
     from ansible_collections.f5devcentral.cloudservices.plugins.modules.f5_cs_eap_certificate import ArgumentSpec
-    from ansible_collections.f5devcentral.cloudservices.plugins.module_utils.cloudservices import HttpRestApi
-    from ansible_collections.f5devcentral.cloudservices.plugins.module_utils.cloudservices import HttpConnection
+    from ansible_collections.f5devcentral.cloudservices.plugins.module_utils.cloudservices import CloudservicesApi
 
 
 fixture_path = os.path.join(os.path.dirname(__file__), 'fixtures')
@@ -61,10 +59,6 @@ class TestParameters(unittest.TestCase):
     def test_module_parameters(self):
         args = dict(
             subscription_id='s-xxxxxxxxxx',
-            f5_cloudservices=dict(
-                user='user',
-                password='password',
-            ),
             certificate='cert',
             private_key='key',
             passphrase='pass_phrase',
@@ -78,8 +72,6 @@ class TestParameters(unittest.TestCase):
         p = ModuleParameters(params=args)
 
         assert p.subscription_id == 's-xxxxxxxxxx'
-        assert p.f5_cloudservices['user'] == 'user'
-        assert p.f5_cloudservices['password'] == 'password'
         assert p.certificate == 'cert'
         assert p.private_key == 'key'
         assert p.passphrase == 'pass_phrase'
@@ -96,10 +88,6 @@ class TestManager(unittest.TestCase):
     def test_certificate_upload(self, *args):
         set_module_args(dict(
             subscription_id='s-xxxxxxxxxx',
-            f5_cloudservices=dict(
-                user='user',
-                password='password',
-            ),
             certificate='cert',
             private_key='key',
             passphrase='pass_phrase',
@@ -118,7 +106,8 @@ class TestManager(unittest.TestCase):
         update_subscription_fake = load_fixture('f5_cs_eap_certificate_update_subscription.json')
         post_certificate_fake = load_fixture('f5_cs_eap_certificate_post_certificate.json')
 
-        api_client = HttpRestApi(HttpConnection())
+        connection = Mock()
+        api_client = CloudservicesApi(connection)
         api_client.login = Mock()
         api_client.get_subscription_by_id = Mock(return_value=get_subscription_fake)
         api_client.update_subscription = Mock(return_value=update_subscription_fake)

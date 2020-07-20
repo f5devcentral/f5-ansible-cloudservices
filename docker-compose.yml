@@ -2,7 +2,7 @@ version: '3.4'
 
 services:
   ansible:
-    command: ansible-playbook ./examples/demo.yml -v
+    command: ansible-playbook ./examples/demo.yml -v -i hosts
     build:
       context: .
       dockerfile: Dockerfile

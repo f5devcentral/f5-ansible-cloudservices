@@ -1,23 +1,25 @@
-- hosts: localhost
+- name: Configure EAP and apply Enforcement Rules
+  hosts: webservers
+  gather_facts: false
   collections:
     - f5devcentral.cloudservices
-  connection: local
+  connection: httpapi
 
   vars:
-    f5_cloudservices:
-      user: "{{ lookup('env','F5_USERNAME') }}"
-      password: "{{ lookup('env','F5_PASSWORD') }}"
+    ansible_network_os: f5devcentral.cloudservices.f5
+    ansible_host: "api.cloudservices.f5.com"
+    ansible_user: "{{ lookup('env','F5_USERNAME') }}"
+    ansible_httpapi_password: "{{ lookup('env','F5_PASSWORD') }}"
+    ansible_httpapi_use_ssl: yes
 
   tasks:
     - name: Create EAP instance
       f5_cs_eap_subscription_app:
-        f5_cloudservices: "{{ f5_cloudservices }}"
         service_instance_name: "au-auction.cloudservicesdemo.net"
       register: subscription
 
     - name: Update EAP IP Enforcement Rules
       f5_cs_eap_ip_enforcement:
-        f5_cloudservices: "{{ f5_cloudservices }}"
         subscription_id: "{{ subscription.subscription_id }}"
         ip_enforcement:
           - description: "hacker-2"
@@ -32,7 +34,6 @@
 
     - name: Fetch CNAME Value
       f5_cs_eap_cname_fetch:
-        f5_cloudservices: "{{ f5_cloudservices }}"
         subscription_id: "{{ subscription.subscription_id }}"
       register: cname
 

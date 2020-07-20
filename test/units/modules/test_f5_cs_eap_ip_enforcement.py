@@ -25,15 +25,12 @@ try:
     from library.modules.f5_cs_eap_ip_enforcement import ModuleParameters
     from library.modules.f5_cs_eap_ip_enforcement import ModuleManager
     from library.modules.f5_cs_eap_ip_enforcement import ArgumentSpec
-    from library.module_utils.cloudservices import HttpRestApi
-    from library.module_utils.cloudservices import HttpConnection
+    from library.module_utils.cloudservices import CloudservicesApi
 except ImportError:
     from ansible_collections.f5devcentral.cloudservices.plugins.modules.f5_cs_eap_ip_enforcement import ModuleParameters
     from ansible_collections.f5devcentral.cloudservices.plugins.modules.f5_cs_eap_ip_enforcement import ModuleManager
     from ansible_collections.f5devcentral.cloudservices.plugins.modules.f5_cs_eap_ip_enforcement import ArgumentSpec
-    from ansible_collections.f5devcentral.cloudservices.plugins.module_utils.cloudservices import HttpRestApi
-    from ansible_collections.f5devcentral.cloudservices.plugins.module_utils.cloudservices import HttpConnection
-
+    from ansible_collections.f5devcentral.cloudservices.plugins.module_utils.cloudservices import CloudservicesApi
 
 fixture_path = os.path.join(os.path.dirname(__file__), 'fixtures')
 fixture_data = {}
@@ -73,10 +70,6 @@ class TestParameters(unittest.TestCase):
     def test_module_parameters(self):
         args = dict(
             subscription_id='s-xxxxxxxxxx',
-            f5_cloudservices=dict(
-                user='user',
-                password='password',
-            ),
             action='update',
             ip_enforcement=[
                 hacker_ip,
@@ -88,9 +81,6 @@ class TestParameters(unittest.TestCase):
         p = ModuleParameters(params=args)
 
         assert p.subscription_id == 's-xxxxxxxxxx'
-        assert p.f5_cloudservices['user'] == 'user'
-        assert p.f5_cloudservices['password'] == 'password'
-
         assert p.action == 'update'
 
         updated_hacker_ip = p.ip_enforcement[0]
@@ -127,10 +117,6 @@ class TestIPEnforcementRulesUpdate(unittest.TestCase):
     def test_ip_enforcement_update(self, *args):
         set_module_args(dict(
             subscription_id='s-xxxxxxxxxx',
-            f5_cloudservices=dict(
-                user='user',
-                password='password',
-            ),
             action='update',
             ip_enforcement=[
                 hacker_ip,
@@ -144,7 +130,9 @@ class TestIPEnforcementRulesUpdate(unittest.TestCase):
         )
 
         get_subscription_fake = load_fixture('f5_cs_eap_ip_enforcement_get_eap_subscription.json')
-        api_client = HttpRestApi(HttpConnection())
+
+        connection = Mock()
+        api_client = CloudservicesApi(connection)
         api_client.login = Mock()
 
         api_client.get_subscription_by_id = Mock(return_value=get_subscription_fake)
@@ -197,10 +185,6 @@ class TestIPEnforcementRulesAppend(unittest.TestCase):
     def test_ip_enforcement_update(self, *args):
         set_module_args(dict(
             subscription_id='s-xxxxxxxxxx',
-            f5_cloudservices=dict(
-                user='user',
-                password='password',
-            ),
             action='append',
             ip_enforcement=[
                 hacker_ip,
@@ -214,7 +198,9 @@ class TestIPEnforcementRulesAppend(unittest.TestCase):
         )
 
         get_subscription_fake = load_fixture('f5_cs_eap_ip_enforcement_get_eap_subscription.json')
-        api_client = HttpRestApi(HttpConnection())
+
+        connection = Mock()
+        api_client = CloudservicesApi(connection)
         api_client.login = Mock()
 
         api_client.get_subscription_by_id = Mock(return_value=get_subscription_fake)
@@ -262,10 +248,6 @@ class TestIPEnforcementRulesExclude(unittest.TestCase):
     def test_ip_enforcement_update(self, *args):
         set_module_args(dict(
             subscription_id='s-xxxxxxxxxx',
-            f5_cloudservices=dict(
-                user='user',
-                password='password',
-            ),
             action='exclude',
             ip_enforcement=[
                 hacker_ip,
@@ -279,7 +261,9 @@ class TestIPEnforcementRulesExclude(unittest.TestCase):
         )
 
         get_subscription_fake = load_fixture('f5_cs_eap_ip_enforcement_get_eap_subscription.json')
-        api_client = HttpRestApi(HttpConnection())
+
+        connection = Mock()
+        api_client = CloudservicesApi(connection)
         api_client.login = Mock()
 
         api_client.get_subscription_by_id = Mock(return_value=get_subscription_fake)

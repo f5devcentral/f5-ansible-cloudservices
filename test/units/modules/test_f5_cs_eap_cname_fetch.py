@@ -25,14 +25,12 @@ try:
     from library.modules.f5_cs_eap_cname_fetch import ModuleParameters
     from library.modules.f5_cs_eap_cname_fetch import ModuleManager
     from library.modules.f5_cs_eap_cname_fetch import ArgumentSpec
-    from library.module_utils.cloudservices import HttpRestApi
-    from library.module_utils.cloudservices import HttpConnection
+    from library.module_utils.cloudservices import CloudservicesApi
 except ImportError:
     from ansible_collections.f5devcentral.cloudservices.plugins.modules.f5_cs_eap_cname_fetch import ModuleParameters
     from ansible_collections.f5devcentral.cloudservices.plugins.modules.f5_cs_eap_cname_fetch import ModuleManager
     from ansible_collections.f5devcentral.cloudservices.plugins.modules.f5_cs_eap_cname_fetch import ArgumentSpec
-    from ansible_collections.f5devcentral.cloudservices.plugins.module_utils.cloudservices import HttpRestApi
-    from ansible_collections.f5devcentral.cloudservices.plugins.module_utils.cloudservices import HttpConnection
+    from ansible_collections.f5devcentral.cloudservices.plugins.module_utils.cloudservices import CloudservicesApi
 
 
 fixture_path = os.path.join(os.path.dirname(__file__), 'fixtures')
@@ -60,18 +58,12 @@ def load_fixture(name):
 class TestParameters(unittest.TestCase):
     def test_module_parameters(self):
         args = dict(
-            subscription_id='s-xxxxxxxxxx',
-            f5_cloudservices=dict(
-                user='user',
-                password='password',
-            )
+            subscription_id='s-xxxxxxxxxx'
         )
 
         p = ModuleParameters(params=args)
 
         assert p.subscription_id == 's-xxxxxxxxxx'
-        assert p.f5_cloudservices['user'] == 'user'
-        assert p.f5_cloudservices['password'] == 'password'
 
 
 class TestManager(unittest.TestCase):
@@ -80,11 +72,7 @@ class TestManager(unittest.TestCase):
 
     def test_cname_fetch(self, *args):
         set_module_args(dict(
-            subscription_id='s-xxxxxxxxxx',
-            f5_cloudservices=dict(
-                user='user',
-                password='password',
-            )
+            subscription_id='s-xxxxxxxxxx'
         ))
 
         module = AnsibleModule(
@@ -92,7 +80,8 @@ class TestManager(unittest.TestCase):
             supports_check_mode=self.spec.supports_check_mode
         )
 
-        api_client = HttpRestApi(HttpConnection())
+        connection = Mock()
+        api_client = CloudservicesApi(connection)
         api_client.login = Mock()
         fixture = load_fixture('f5_cs_eap_cname_fetch_get_eap_subscription.json')
         api_client.get_subscription_by_id = Mock(return_value=fixture)

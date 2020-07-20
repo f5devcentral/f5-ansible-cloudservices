@@ -1,16 +1,19 @@
-- hosts: localhost
+- name: Fetch CNAME
+  hosts: webservers
+  gather_facts: false
   collections:
     - f5devcentral.cloudservices
-  connection: local
+  connection: httpapi
 
   vars:
-    f5_cloudservices:
-      user: "username"
-      password: "pass"
+    ansible_network_os: f5devcentral.cloudservices.f5
+    ansible_host: "api.cloudservices.f5.com"
+    ansible_user: "user@example.com"
+    ansible_httpapi_password: "password"
+    ansible_httpapi_use_ssl: yes
 
   tasks:
     - name: Fetch CNAME value
       f5_cs_eap_cname_fetch:
-        f5_cloudservices: "{{ f5_cloudservices }}"
         subscription_id: "s-xxxxxxxxxx"
       register: cname

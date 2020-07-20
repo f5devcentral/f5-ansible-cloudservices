@@ -1,17 +1,20 @@
-- hosts: localhost
+- name: Manage Enforcement Rules
+  hosts: webservers
+  gather_facts: false
   collections:
     - f5devcentral.cloudservices
-  connection: local
+  connection: httpapi
 
   vars:
-    f5_cloudservices:
-      user: "username"
-      password: "pass"
+    ansible_network_os: f5devcentral.cloudservices.f5
+    ansible_host: "api.cloudservices.f5.com"
+    ansible_user: "user@example.com"
+    ansible_httpapi_password: "password"
+    ansible_httpapi_use_ssl: yes
 
   tasks:
     - name: Update IP Enforcement Rules
       f5_cs_eap_ip_enforcement:
-        f5_cloudservices: "{{ f5_cloudservices }}"
         subscription_id: "s-xxxxxxxxxx"
         ip_enforcement:
           - address: "192.168.1.1"
@@ -26,7 +29,6 @@
 
     - name: Append IPs to the Rules
       f5_cs_eap_ip_enforcement:
-        f5_cloudservices: "{{ f5_cloudservices }}"
         subscription_id: "s-xxxxxxxxxx"
         action: "append"
         ip_enforcement:
@@ -42,7 +44,6 @@
 
     - name: Exclude IPs from the Rules
       f5_cs_eap_ip_enforcement:
-        f5_cloudservices: "{{ f5_cloudservices }}"
         subscription_id: "s-xxxxxxxxxx"
         action: "exclude"
         ip_enforcement:

@@ -7,6 +7,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.connection import Connection
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
@@ -81,18 +82,13 @@ ip_enforcement:
 '''
 
 try:
-    from library.module_utils.cloudservices import HttpRestApi
-    from library.module_utils.cloudservices import HttpConnection
-    from library.module_utils.cloudservices import F5ModuleError
-    from library.module_utils.cloudservices import f5_cs_argument_spec
-    from library.module_utils.cloudservices import f5_cs_eap_default_policy
-    from library.module_utils.cloudservices import AnsibleF5Parameters
+    from library.module_utils.cloudservices import CloudservicesApi
+    from library.module_utils.common import F5ModuleError
+    from library.module_utils.common import AnsibleF5Parameters
 except ImportError:
-    from ansible_collections.f5devcentral.cloudservices.plugins.module_utils.cloudservices import HttpRestApi
-    from ansible_collections.f5devcentral.cloudservices.plugins.module_utils.cloudservices import HttpConnection
-    from ansible_collections.f5devcentral.cloudservices.plugins.module_utils.cloudservices import F5ModuleError
-    from ansible_collections.f5devcentral.cloudservices.plugins.module_utils.cloudservices import f5_cs_argument_spec
-    from ansible_collections.f5devcentral.cloudservices.plugins.module_utils.cloudservices import AnsibleF5Parameters
+    from ansible_collections.f5devcentral.cloudservices.plugins.module_utils.cloudservices import CloudservicesApi
+    from ansible_collections.f5devcentral.cloudservices.plugins.module_utils.common import F5ModuleError
+    from ansible_collections.f5devcentral.cloudservices.plugins.module_utils.common import AnsibleF5Parameters
 
 
 class Parameters(AnsibleF5Parameters):
@@ -232,11 +228,6 @@ class ModuleManager(object):
         self.have = ApiParameters(client=self.client)
         self.changes = UsableChanges()
 
-        f5_cs = self.module.params.get('f5_cloudservices', None)
-        self.username = f5_cs['user']
-        self.password = f5_cs['password']
-        self.client.login(self.username, self.password)
-
     def _update_changed_options(self):
         diff = Difference(self.want, self.have)
         updatables = Parameters.updatables
@@ -331,7 +322,6 @@ class ArgumentSpec(object):
         )
 
         self.argument_spec = {}
-        self.argument_spec.update(f5_cs_argument_spec)
         self.argument_spec.update(argument_spec)
 
 
@@ -343,8 +333,11 @@ def main():
         supports_check_mode=spec.supports_check_mode,
     )
 
+    connection = Connection(module._socket_path)
+    client = CloudservicesApi(connection)
+
     try:
-        mm = ModuleManager(module=module, client=HttpRestApi(HttpConnection()))
+        mm = ModuleManager(module=module, client=client)
         results = mm.exec_module()
         module.exit_json(**results)
     except F5ModuleError as ex:

@@ -1,34 +1,34 @@
-- hosts: localhost
+- name: Manage EAP Application
+  hosts: webservers
+  gather_facts: false
   collections:
     - f5devcentral.cloudservices
-  connection: local
+  connection: httpapi
 
   vars:
-    f5_cloudservices:
-      user: "username"
-      password: "pass"
+    ansible_network_os: f5devcentral.cloudservices.f5
+    ansible_host: "api.cloudservices.f5.com"
+    ansible_user: "user@example.com"
+    ansible_httpapi_password: "password"
+    ansible_httpapi_use_ssl: yes
 
   tasks:
     - name: Create EAP instance
       f5_cs_eap_subscription_app:
-        f5_cloudservices: "{{ f5_cloudservices }}"
         service_instance_name: "fqdn.demo.net"
 
     - name: Fetch EAP instance
       f5_cs_eap_subscription_app:
-        f5_cloudservices: "{{ f5_cloudservices }}"
         subscription_id: "s-xxxxxxxxxx"
         state: "fetch"
 
     - name: Retire EAP instance
       f5_cs_eap_subscription_app:
-        f5_cloudservices: "{{ f5_cloudservices }}"
         subscription_id: "s-xxxxxxxxxx"
         state: "absent"
 
     - name: Partial EAP instance update
       f5_cs_eap_subscription_app:
-        f5_cloudservices: "{{ f5_cloudservices }}"
         subscription_id: "s-xxxxxxxxxx"
         patch: true
         configuration:
@@ -42,7 +42,6 @@
 
     - name: Full EAP instance update
       f5_cs_eap_subscription_app:
-        f5_cloudservices: "{{ f5_cloudservices }}"
         subscription_id: "s-xxxxxxxxxx"
         service_instance_name: "fqdn.demo.net"
         configuration:
