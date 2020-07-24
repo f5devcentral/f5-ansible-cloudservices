@@ -37,10 +37,30 @@ Installing the Build
    ansible to search for collections. An example of this would be adding ``collections_paths = ./collections``
    to your **ansible.cfg**
 
+Supported Services & Modules
+----------------------------
+The following F5 Cloud Services modules are currently supported:
+
+
+**F5 Essential App Protect**:
+Provides application protection (as a Service) across multiple attack vectors using signatures from F5 Labs threat intelligence. 
+
+More info: 
+https://clouddocs.f5.com/cloud-services/latest/f5-cloud-services-Essential.App.Protect-About.html
+
+API User's Guide: https://clouddocs.f5.com/cloud-services/latest/f5-cloud-services-Essential.App.Protect-API.UsersGuide.html
+
+*Modules*:
+ - f5_cs_eap_certificate
+ - f5_cs_eap_cname_fetch
+ - f5_cs_eap_ip_enforcement
+ - f5_cs_eap_subscription_app
+ 
+
 Example Playbook
 ------------
 
-Ansible modules are documented within each module itself. The example below will upload and apply certificate for EAP application.
+Ansible modules are documented within each the .py code of each module itself within /plugins/modules/. The example below will upload and apply certificate for an app protected by F5 Essential App Protect service.
 
 .. code:: yml
 
