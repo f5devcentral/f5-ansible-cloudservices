@@ -11,8 +11,9 @@ The F5 Modules for Ansible are freely provided to the open source community for 
 
 
 Installing the Build
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-.. code:: shell
+----------------------------
+
+```shell
 
     # CASE 1
     # To install build from the repository
@@ -29,13 +30,12 @@ Installing the Build
     # CASE 3
     # Use Docker and docker-compose
     docker-compose up
+```
 
 
-.. note::
-
-   "-p" is the location in which the collection will be installed. This location should be defined in the path for
-   ansible to search for collections. An example of this would be adding ``collections_paths = ./collections``
-   to your **ansible.cfg**
+**NOTE:** "-p" is the location in which the collection will be installed. This location should be defined in the path for
+ansible to search for collections. An example of this would be adding ``collections_paths = ./collections``
+to your **ansible.cfg**
 
 Supported Services & Modules
 ----------------------------
@@ -50,7 +50,7 @@ https://clouddocs.f5.com/cloud-services/latest/f5-cloud-services-Essential.App.P
 
 API User's Guide: https://clouddocs.f5.com/cloud-services/latest/f5-cloud-services-Essential.App.Protect-API.UsersGuide.html
 
-*Modules*:
+**Modules**:
  - f5_cs_eap_certificate
  - f5_cs_eap_cname_fetch
  - f5_cs_eap_ip_enforcement
@@ -60,9 +60,9 @@ API User's Guide: https://clouddocs.f5.com/cloud-services/latest/f5-cloud-servic
 Example Playbook
 ------------
 
-Ansible modules are documented within each the .py code of each module itself within /plugins/modules/. The example below will upload and apply certificate for an app protected by F5 Essential App Protect service.
+Ansible modules are documented within each the .py code of each module itself within ``/plugins/modules/``. The example below will upload and apply certificate for an app protected by F5 Essential App Protect service.
 
-.. code:: yml
+```yml
 
     - name: Apply SSL certificate
       hosts: webservers
@@ -89,7 +89,7 @@ Ansible modules are documented within each the .py code of each module itself wi
             https_port: 443
             https_redirect: true
             update_comment: "update SSL certificate"
-
+```
 
 Bugs, Issues
 ------------
