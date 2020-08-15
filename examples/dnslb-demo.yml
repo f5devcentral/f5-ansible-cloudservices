@@ -1,0 +1,84 @@
+- name: Configure EAP and apply Enforcement Rules
+  hosts: webservers
+  gather_facts: false
+  collections:
+    - f5devcentral.cloudservices
+  connection: httpapi
+
+  vars:
+    ansible_network_os: f5devcentral.cloudservices.f5
+    ansible_host: "api.cloudservices.f5.com"
+    ansible_user: "{{ lookup('env','F5_USERNAME') }}"
+    ansible_httpapi_password: "{{ lookup('env','F5_PASSWORD') }}"
+    ansible_httpapi_use_ssl: yes
+
+  tasks:
+    - name: Create DNS LB instance
+      f5_cs_dnslb_subscription_app:
+        service_instance_name: "user-01.securelab.online"
+        configuration:
+          gslb_service:
+            zone: "user-01.securelab.online"
+            virtual_servers:
+              ipEndpoint_1:
+                address: "34.229.48.248"
+                display_name: "endpoint-1"
+                monitor: "none"
+                port: 80
+                virtual_server_type: "cloud"
+      register: subscription
+
+    - name: Update DNS LB instance
+      f5_cs_dnslb_subscription_app:
+        patch: true
+        state: "present"
+        subscription_id: "{{ subscription.subscription_id }}"
+        configuration:
+          gslb_service:
+            load_balanced_records:
+              lbrs_auction:
+                aliases:
+                  - "endpoint-1"
+                display_name: "endpoint-1.user-01.securelab.online"
+                enable: true
+                persistence: false
+                proximity_rules:
+                  - pool: "pools_usa"
+                    region: "regions_usa"
+                    score: 1
+                rr_type: "A"
+            pools:
+              pools_usa:
+                display_name: "usa"
+                enable: true
+                load_balancing_mode: "round-robin"
+                max_answers: 1
+                members:
+                  - final: null
+                    monitor: "basic"
+                    virtual_server: "ipEndpoint_1"
+                remark: ""
+                rr_type: "A"
+                ttl: 30
+            regions:
+              regions_usa:
+                display_name: "usa"
+                sectors:
+                  - code: "NA"
+                    scale: "continent"
+
+    - name: Activate DNS LB instance
+      f5_cs_dnslb_subscription_app:
+        subscription_id: "{{ subscription.subscription_id }}"
+        state: "active"
+        
+    - name: Fetch DNS LB instance
+      f5_cs_dnslb_subscription_app:
+        subscription_id: "{{ subscription.subscription_id }}"
+        state: "fetch"
+      register: f_subscription
+
+    - debug:
+        var: f_subscription
+        verbosity: 1
+

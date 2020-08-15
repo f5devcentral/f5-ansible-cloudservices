@@ -16,7 +16,7 @@ description:
 version_added: "1.0"
 """
 
-
+import re
 from ansible.errors import AnsibleConnectionFailure
 
 f5_cs_eap_default_policy = {
@@ -189,6 +189,7 @@ SUBSCRIPTION_BY_ID_URL = "/v1/svc-subscription/subscriptions/{0}"
 SUBSCRIPTION_URL = "/v1/svc-subscription/subscriptions"
 SUBSCRIPTION_STATUS_URL = "/v1/svc-subscription/subscriptions/{0}/status"
 ACTIVATE_SUBSCRIPTION_URL = "/v1/svc-subscription/subscriptions/{0}/activate"
+SUSPEND_SUBSCRIPTION_URL = "/v1/svc-subscription/subscriptions/{0}/suspend"
 RETIRE_SUBSCRIPTION_URL = "/v1/svc-subscription/subscriptions/{0}/retire"
 GET_CURRENT_USER = "/v1/svc-account/user"
 GET_CATALOGS = "/v1/svc-catalog/catalogs"
@@ -200,9 +201,17 @@ class CloudservicesApi():
         self.connection = connection
         self.account_id = account_id
 
+    def handle_httperror(self, response):
+        err_4xx = r'^4\d{2}$'
+        handled_error = re.search(err_4xx, str(response['code']))
+        if handled_error:
+            raise AnsibleConnectionFailure(response['contents'])
+        return False
+
     def get_subscription_by_id(self, subscription_id):
         if subscription_id:
             response = self.connection.get(url=SUBSCRIPTION_BY_ID_URL.format(subscription_id), account_id=self.account_id)
+            self.handle_httperror(response)
             return response['contents']
         else:
             raise AnsibleConnectionFailure('Subscription Id is required.')
@@ -210,6 +219,7 @@ class CloudservicesApi():
     def create_subscription(self, payload):
         if payload:
             response = self.connection.post(url=SUBSCRIPTION_URL, data=payload, account_id=self.account_id)
+            self.handle_httperror(response)
             return response['contents']
         else:
             raise AnsibleConnectionFailure('Payload is empty.')
@@ -217,31 +227,43 @@ class CloudservicesApi():
     def update_subscription(self, payload, subscription_id):
         if payload:
             response = self.connection.put(url=SUBSCRIPTION_BY_ID_URL.format(subscription_id), data=payload, account_id=self.account_id)
+            self.handle_httperror(response)
             return response['contents']
         else:
             raise AnsibleConnectionFailure('Payload is empty.')
 
     def retire_subscription(self, payload, subscription_id):
         response = self.connection.post(url=RETIRE_SUBSCRIPTION_URL.format(subscription_id), data=payload, account_id=self.account_id)
+        self.handle_httperror(response)
         return response['contents']
 
     def activate_subscription(self, subscription_id):
         response = self.connection.post(url=ACTIVATE_SUBSCRIPTION_URL.format(subscription_id), account_id=self.account_id)
+        self.handle_httperror(response)
+        return response['contents']
+
+    def suspend_subscription(self, subscription_id):
+        response = self.connection.post(url=SUSPEND_SUBSCRIPTION_URL.format(subscription_id), account_id=self.account_id)
+        self.handle_httperror(response)
         return response['contents']
 
     def get_subscription_status(self, subscription_id):
         response = self.connection.get(url=SUBSCRIPTION_STATUS_URL.format(subscription_id), account_id=self.account_id)
+        self.handle_httperror(response)
         return response['contents']
 
     def get_current_user(self):
         response = self.connection.get(url=GET_CURRENT_USER, account_id=self.account_id)
+        self.handle_httperror(response)
         return response['contents']
 
     def get_catalogs(self):
         response = self.connection.get(url=GET_CATALOGS, account_id=self.account_id)
+        self.handle_httperror(response)
         return response['contents']
 
     def post_certificate(self, payload):
         response = self.connection.post(url=CERTIFICATES_URL, data=payload, account_id=self.account_id)
+        self.handle_httperror(response)
         return response['contents']
 

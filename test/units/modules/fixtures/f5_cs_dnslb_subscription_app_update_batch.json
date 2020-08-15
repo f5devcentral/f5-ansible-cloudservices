@@ -1,0 +1,39 @@
+{
+  "account_id": "a-xxxxxxxxxx",
+  "catalog_id": "c-xxxxxxxxxx",
+  "subscription_id": "s-xxxxxxxxxx",
+  "user_id": "u-xxxxxxxxxx",
+  "service_instance_name": "fqdn.demo.com",
+  "service_type": "galb",
+  "status": "ACTIVE",
+    "configuration": {
+        "details": {
+            "lbr_metadata": {
+                "active_lbr_count": 0,
+                "active_pool_member_advanced_monitor_count": 0,
+                "active_pool_member_standard_monitor_count": 0
+            },
+            "pools_health": {}
+        },
+        "gslb_service": {
+            "custom_parameter": true,
+            "zone": "fqdn.demo.com"
+        },
+        "nameservers": [
+            {
+                "ipv4": "107.162.158.150",
+                "ipv6": "2604:e180:1021::ffff:6ba2:9e96",
+                "name": "ns1.f5cloudservices.com"
+            },
+            {
+                "ipv4": "107.162.158.151",
+                "ipv6": "2604:e180:1021::ffff:6ba2:9e97",
+                "name": "ns2.f5cloudservices.com"
+            }
+        ]
+    },
+    "create_time": "2020-07-30T16:27:08.990489Z",
+    "update_time": "2020-07-30T16:27:09.084275Z",
+    "cancel_time": null,
+    "end_time": null
+}

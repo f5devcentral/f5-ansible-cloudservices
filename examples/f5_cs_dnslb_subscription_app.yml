@@ -1,0 +1,107 @@
+- name: Manage DNS LB Application
+  hosts: webservers
+  gather_facts: false
+  collections:
+    - f5devcentral.cloudservices
+  connection: httpapi
+
+  vars:
+    ansible_network_os: f5devcentral.cloudservices.f5
+    ansible_host: "api.cloudservices.f5.com"
+    ansible_user: "user@example.com"
+    ansible_httpapi_password: "password"
+    ansible_httpapi_use_ssl: yes
+
+  tasks:
+    - name: Create DNS LB instance
+      f5_cs_dnslb_subscription_app:
+        service_instance_name: "fqdn.demo.net"
+        configuration:
+          gslb_service:
+            zone: "fqdn.demo.net"
+            virtual_servers:
+              ipEndpoint_1:
+                address: "12.34.56.78"
+                display_name: "endpoint1"
+                monitor: "none"
+                port: 80
+                virtual_server_type: "cloud"
+
+    - name: Fetch DNS LB instance
+      f5_cs_dnslb_subscription_app:
+        subscription_id: "s-xxxxxxxxxx"
+        state: "fetch"
+
+    - name: Retire DNS LB instance
+      f5_cs_dnslb_subscription_app:
+        subscription_id: "s-xxxxxxxxxx"
+        state: "absent"
+
+    - name: Activate DNS LB instance
+      f5_cs_dnslb_subscription_app:
+        subscription_id: "s-xxxxxxxxxx"
+        state: "active"
+
+    - name: Suspend DNS LB instance
+      f5_cs_dnslb_subscription_app:
+        subscription_id: "s-xxxxxxxxxx"
+        state: "suspended"
+
+
+    - name: Partial DNS LB instance update
+      f5_cs_dnslb_subscription_app:
+        service_instance_name: "fqdn.demo.net"
+        patch: true
+        configuration:
+          gslb_service:
+            zone: "fqdn.demo.net"
+            virtual_servers:
+              ipEndpoint_1":
+                address: "87.65.43.21",
+                display_name: "endpoint_1"
+                monitor: "none"
+                port: 80
+
+    - name: Full DNS LB instance update
+      f5_cs_dnslb_subscription_app:
+        service_instance_name: "fqdn.demo.net"
+        configuration:
+          gslb_service:
+              zone: "fqdn.demo.net"
+              load_balanced_records:
+                lbrs_auction:
+                  aliases:
+                    - "endpoint1"
+                  display_name: "endpoint1.fqdn.demo.net"
+                  enable: true
+                  persistence: false
+                  proximity_rules:
+                      - pool: "pools_1"
+                        region: "regions_usa"
+                        score: 1
+                  rr_type: "A"
+              pools:
+                pools_1:
+                  display_name: "usa"
+                  enable: true
+                  load_balancing_mode: "round-robin"
+                  max_answers: 1
+                  members:
+                      - final: null
+                        monitor: "basic"
+                        virtual_server: "ipEndpoint_1"
+                  remark: ""
+                  rr_type: "A"
+                  ttl: 30
+              regions:
+                regions_usa:
+                  display_name: "usa"
+                  sectors:
+                      - code: "NA"
+                        scale: "continent"
+              virtual_servers:
+                ipEndpoint_1:
+                  address: "12.34.56.78"
+                  display_name: "endpoint1"
+                  monitor: "none"
+                  port: 80

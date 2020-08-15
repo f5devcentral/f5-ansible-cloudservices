@@ -15,19 +15,19 @@ Installing the Build
 
 ```shell
 
-    # CASE 1
+    # Approach 1
     # To install build from the repository
     git clone git@github.com:f5devcentral/f5-ansible-cloudservices.git
     cd ./f5-ansible-cloudservices
     ansible-galaxy collection build --force
     ansible-galaxy collection install f5devcentral-cloudservices-1.0.0.tar.gz -p ./collections/
 
-    # CASE 2
+    # Approach 2
     # To install from the Ansible Galaxy
     # Not yet available
     ansible-galaxy collection install f5devcentral-cloudservices -p ./collections/
 
-    # CASE 3
+    # Approach 3
     # Use Docker and docker-compose
     docker-compose up
 ```
@@ -55,7 +55,7 @@ API User's Guide: https://clouddocs.f5.com/cloud-services/latest/f5-cloud-servic
  - f5_cs_eap_cname_fetch
  - f5_cs_eap_ip_enforcement
  - f5_cs_eap_subscription_app
- 
+ - f5_cs_dnslb_subscription_app 
 
 Example Playbook
 ------------

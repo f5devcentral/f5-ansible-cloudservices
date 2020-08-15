@@ -1,0 +1,39 @@
+{
+  "account_id": "a-xxxxxxxxxx",
+  "catalog_id": "c-xxxxxxxxxx",
+  "subscription_id": "s-xxxxxxxxxx",
+  "user_id": "u-xxxxxxxxxx",
+  "service_instance_name": "fqdn.demo.com",
+  "service_type": "gslb",
+  "status": "DEPLOYING",
+  "configuration": {
+      "gslb_service": {
+          "virtual_servers": {
+              "ipEndpoint_1": {
+                  "address": "12.34.56.78",
+                  "display_name": "endpoint_1",
+                  "monitor": "none",
+                  "port": 80,
+                  "virtual_server_type": "cloud"
+              }
+          },
+          "zone": "fqdn.demo.com"
+      },
+      "nameservers": [
+          {
+              "ipv4": "107.162.158.150",
+              "ipv6": "2604:e180:1021::ffff:6ba2:9e96",
+              "name": "ns1.f5cloudservices.com"
+          },
+          {
+              "ipv4": "107.162.158.151",
+              "ipv6": "2604:e180:1021::ffff:6ba2:9e97",
+              "name": "ns2.f5cloudservices.com"
+          }
+      ]
+  },
+  "create_time": "2020-07-29T16:55:44.474479Z",
+  "update_time": "2020-07-29T16:55:44.474479Z",
+  "cancel_time": null,
+  "end_time": null
+}
