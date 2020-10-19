@@ -1,0 +1,110 @@
+{
+    "subscriptions": [
+        {
+            "subscription_id": "s-yyyyyyyyyyy",
+            "account_id": "a-yyyyyyyyyyy",
+            "user_id": "u-yyyyyyyyyyy",
+            "catalog_id": "c-yyyyyyyyyyy",
+            "service_instance_id": "waf-yyyyyyyyyyy",
+            "status": "ACTIVE",
+            "service_instance_name": "yfqdn.demo.com",
+            "deleted": false,
+            "service_type": "waf",
+            "configuration": {
+                "details": {
+                    "CNAMEValue": "waf-yyyyyyyyyyy.waf.prd.f5aas.com"
+                },
+                "waf_service": {
+                    "application": {
+                        "description": "",
+                        "fqdn": "yfqdn.demo.com",
+                        "http": {
+                            "enabled": true,
+                            "https_redirect": false,
+                            "port": 80
+                        },
+                        "https": {
+                            "enabled": false,
+                            "port": 8443,
+                            "tls": {
+                                "certificate_id": ""
+                            }
+                        },
+                        "waf_regions": {
+                            "aws": {
+                                "eu-west-2": {
+                                    "endpoint": {
+                                        "http": {
+                                            "enabled": true,
+                                            "port": 80
+                                        },
+                                        "ips": [
+                                            "192.168.1.1"
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "create_time": "2020-06-05T00:39:32.252166Z",
+            "update_time": "2020-06-22T16:09:36.008120Z",
+            "cancel_time": null,
+            "end_time": null
+        },
+         {
+            "subscription_id": "s-xxxxxxxxxx",
+            "account_id": "a-xxxxxxxxxx",
+            "user_id": "u-xxxxxxxxxx",
+            "catalog_id": "c-xxxxxxxxxx",
+            "service_instance_id": "waf-xxxxxxxxxx",
+            "status": "ACTIVE",
+            "service_instance_name": "fqdn.demo.com",
+            "deleted": false,
+            "service_type": "waf",
+            "configuration": {
+                "details": {
+                    "CNAMEValue": "waf-xxxxxxxxxx.waf.prd.f5aas.com"
+                },
+                "waf_service": {
+                    "application": {
+                        "description": "",
+                        "fqdn": "fqdn.demo.com",
+                        "http": {
+                            "enabled": true,
+                            "https_redirect": false,
+                            "port": 80
+                        },
+                        "https": {
+                            "enabled": true,
+                            "port": 443,
+                            "tls": {
+                                "certificate_id": "cert-xxxxxxxxxx"
+                            }
+                        },
+                        "waf_regions": {
+                            "aws": {
+                                "eu-west-2": {
+                                    "endpoint": {
+                                        "http": {
+                                            "enabled": true,
+                                            "port": 80
+                                        },
+                                        "ips": [
+                                            "192.168.1.1"
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "create_time": "2020-06-05T00:39:32.252166Z",
+            "update_time": "2020-06-22T16:09:36.008120Z",
+            "cancel_time": null,
+            "end_time": null
+        }
+    ]
+}

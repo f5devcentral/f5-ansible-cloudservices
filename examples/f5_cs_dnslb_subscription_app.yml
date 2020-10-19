@@ -11,8 +11,14 @@
     ansible_user: "user@example.com"
     ansible_httpapi_password: "password"
     ansible_httpapi_use_ssl: yes
+    subscription_id: "s-xxxxxxxxxx"
+    endpoint: "12.34.56.78"
 
   tasks:
+    - name: Read All DNSLB apps
+      f5_cs_dnslb_subscription_app:
+        state: "fetch"
+
     - name: Create DNS LB instance
       f5_cs_dnslb_subscription_app:
         service_instance_name: "fqdn.demo.net"
@@ -21,7 +27,7 @@
             zone: "fqdn.demo.net"
             virtual_servers:
               ipEndpoint_1:
-                address: "12.34.56.78"
+                address: "{{ endpoint }}"
                 display_name: "endpoint1"
                 monitor: "none"
                 port: 80
@@ -29,24 +35,23 @@
 
     - name: Fetch DNS LB instance
       f5_cs_dnslb_subscription_app:
-        subscription_id: "s-xxxxxxxxxx"
+        subscription_id: "{{ subscription_id }}"
         state: "fetch"
 
     - name: Retire DNS LB instance
       f5_cs_dnslb_subscription_app:
-        subscription_id: "s-xxxxxxxxxx"
+        subscription_id: "{{ subscription_id }}"
         state: "absent"
 
     - name: Activate DNS LB instance
       f5_cs_dnslb_subscription_app:
-        subscription_id: "s-xxxxxxxxxx"
+        subscription_id: "{{ subscription_id }}"
         state: "active"
 
     - name: Suspend DNS LB instance
       f5_cs_dnslb_subscription_app:
-        subscription_id: "s-xxxxxxxxxx"
+        subscription_id: "{{ subscription_id }}"
         state: "suspended"
-
 
     - name: Partial DNS LB instance update
       f5_cs_dnslb_subscription_app:
@@ -101,7 +106,7 @@
                         scale: "continent"
               virtual_servers:
                 ipEndpoint_1:
-                  address: "12.34.56.78"
+                  address: "{{ endpoint }}"
                   display_name: "endpoint1"
                   monitor: "none"
                   port: 80

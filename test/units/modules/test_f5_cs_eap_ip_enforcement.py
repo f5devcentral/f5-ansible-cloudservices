@@ -70,7 +70,7 @@ class TestParameters(unittest.TestCase):
     def test_module_parameters(self):
         args = dict(
             subscription_id='s-xxxxxxxxxx',
-            action='update',
+            state='present',
             ip_enforcement=[
                 hacker_ip,
                 devops_ip,
@@ -81,7 +81,7 @@ class TestParameters(unittest.TestCase):
         p = ModuleParameters(params=args)
 
         assert p.subscription_id == 's-xxxxxxxxxx'
-        assert p.action == 'update'
+        assert p.state == 'present'
 
         updated_hacker_ip = p.ip_enforcement[0]
         assert hacker_ip['address'] == updated_hacker_ip['address']
@@ -117,7 +117,7 @@ class TestIPEnforcementRulesUpdate(unittest.TestCase):
     def test_ip_enforcement_update(self, *args):
         set_module_args(dict(
             subscription_id='s-xxxxxxxxxx',
-            action='update',
+            state='present',
             ip_enforcement=[
                 hacker_ip,
                 devops_ip,
@@ -185,7 +185,8 @@ class TestIPEnforcementRulesAppend(unittest.TestCase):
     def test_ip_enforcement_update(self, *args):
         set_module_args(dict(
             subscription_id='s-xxxxxxxxxx',
-            action='append',
+            state='present',
+            append=True,
             ip_enforcement=[
                 hacker_ip,
                 devops_ip,
@@ -248,7 +249,7 @@ class TestIPEnforcementRulesExclude(unittest.TestCase):
     def test_ip_enforcement_update(self, *args):
         set_module_args(dict(
             subscription_id='s-xxxxxxxxxx',
-            action='exclude',
+            state='absent',
             ip_enforcement=[
                 hacker_ip,
                 devops_ip,

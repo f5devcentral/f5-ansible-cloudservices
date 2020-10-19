@@ -190,7 +190,7 @@ class TestSubscriptionOperate(unittest.TestCase):
     def retire_subscription(self, payload, subscription_id, *args, **kwargs):
         assert subscription_id == 's-xxxxxxxxxx'
         assert payload['subscription_id'] == 's-xxxxxxxxxx'
-        return load_fixture('f5_cs_dnslb_subscription_app_retire.json')
+        return load_fixture('f5_cs_subscription_app_retire.json')
 
     def test_subscription_retire(self, *args):
         set_module_args(dict(
@@ -226,7 +226,7 @@ class TestSubscriptionOperate(unittest.TestCase):
             supports_check_mode=self.spec.supports_check_mode
         )
 
-        get_subscription_status = load_fixture('f5_cs_dnslb_subscription_app_active.json')
+        get_subscription_status = load_fixture('f5_cs_subscription_app_active.json')
         connection = Mock()
         api_client = CloudservicesApi(connection)
         api_client.login = Mock()
@@ -251,11 +251,11 @@ class TestSubscriptionOperate(unittest.TestCase):
             supports_check_mode=self.spec.supports_check_mode
         )
 
-        get_subscription_status = load_fixture('f5_cs_dnslb_subscription_app_suspend.json')
+        get_subscription_status = load_fixture('f5_cs_subscription_app_suspend.json')
         connection = Mock()
         api_client = CloudservicesApi(connection)
         api_client.login = Mock()
-        api_client.activate_subscription = Mock()
+        api_client.suspend_subscription = Mock()
         api_client.get_subscription_status = Mock(return_value=get_subscription_status)
 
         mm = ModuleManager(module=module, client=api_client)

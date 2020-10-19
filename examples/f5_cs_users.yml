@@ -1,0 +1,39 @@
+- name: Manage Users and Invites
+  hosts: webservers
+  gather_facts: false
+  collections:
+    - f5devcentral.cloudservices
+  connection: httpapi
+
+  vars:
+    ansible_network_os: f5devcentral.cloudservices.f5
+    ansible_host: "api.cloudservices.f5.com"
+    ansible_user: "user@example.com"
+    ansible_httpapi_password: "password"
+    ansible_httpapi_use_ssl: yes
+    user_id: "u-xxxxxxxxx"
+    invite_id: "i-xxxxxxxxx"
+
+  tasks:
+    - name: Invite user
+      f5_cs_users:
+        state: "present"
+        users:
+          - email: "email@email.com"
+            first_name: "bob"
+            last_name: "theuser"
+            role_name: "privileged-user"
+
+    - name: Read all users and invites
+      f5_cs_users:
+        state: "fetch"
+
+    - name: Remove user
+      f5_cs_users:
+        user_id: "{{ user_id }}"
+        state: "absent"
+
+    - name: Remove invite
+      f5_cs_users:
+        invite_id: "{{ invite_id }}"
+        state: "absent"

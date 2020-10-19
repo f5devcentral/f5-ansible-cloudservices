@@ -11,11 +11,12 @@
     ansible_user: "user@example.com"
     ansible_httpapi_password: "password"
     ansible_httpapi_use_ssl: yes
+    subscription_id: "s-xxxxxxxxxx"
 
   tasks:
     - name: Update IP Enforcement Rules
       f5_cs_eap_ip_enforcement:
-        subscription_id: "s-xxxxxxxxxx"
+        subscription_id: "{{ subscription_id }}"
         ip_enforcement:
           - address: "192.168.1.1"
             description: "ip_1"
@@ -25,12 +26,11 @@
             action: "allow"
           - address: "192.168.1.3"
             log: false
-      register: rules_list
 
     - name: Append IPs to the Rules
       f5_cs_eap_ip_enforcement:
-        subscription_id: "s-xxxxxxxxxx"
-        action: "append"
+        subscription_id: "{{ subscription_id }}"
+        append: true
         ip_enforcement:
           - address: "192.168.1.1"
             description: "ip_1"
@@ -40,13 +40,11 @@
             action: "allow"
           - address: "192.168.1.3"
             log: false
-      register: rules_list
 
     - name: Exclude IPs from the Rules
       f5_cs_eap_ip_enforcement:
-        subscription_id: "s-xxxxxxxxxx"
-        action: "exclude"
+        subscription_id: "{{ subscription_id }}"
+        action: "absent"
         ip_enforcement:
           - address: "192.168.1.1"
           - address: "192.168.1.2"
-      register: rules_list

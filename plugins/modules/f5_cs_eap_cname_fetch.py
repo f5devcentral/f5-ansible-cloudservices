@@ -15,7 +15,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 
 DOCUMENTATION = r'''
 ---
-module: f5_cs_eap_cname_fetch.py
+module: f5_cs_eap_cname_fetch
 short_description: Get CNAMEValue
 description: 
     - This module will return CNAME record for Essential App Protect application 

@@ -1,0 +1,48 @@
+{
+  "subscription_id": "s-xxxxxxxxxx",
+  "account_id": "a-xxxxxxxxxx",
+  "user_id": "u-xxxxxxxxxx",
+  "catalog_id": "c-xxxxxxxxxx",
+  "service_instance_id": "waf-xxxxxxxxxx",
+  "status": "ACTIVE",
+  "service_instance_name": "fqdn.test.com",
+  "deleted": false,
+  "service_type": "waf",
+  "configuration": {
+    "gslb_service": {
+      "virtual_servers": {
+        "cloud_endpoint_1": {
+          "address": "192.168.1.1",
+          "display_name": "cloud-endpoint-1",
+          "monitor": "none",
+          "port": 80,
+          "virtual_server_type": "cloud"
+        },
+        "ltm_endpoint_1": {
+          "translation_address": "192.168.1.1",
+          "display_name": "bigip-ltm-endpoint-1",
+          "vip_id": "vip-id",
+          "port": 80,
+          "virtual_server_type": "bigip-ltm"
+        }
+      },
+      "zone": "fqdn.test.com"
+    },
+    "nameservers": [
+      {
+        "ipv4": "107.162.158.150",
+        "ipv6": "2604:e180:1021::ffff:6ba2:9e96",
+        "name": "ns1.f5cloudservices.com"
+      },
+      {
+        "ipv4": "107.162.158.151",
+        "ipv6": "2604:e180:1021::ffff:6ba2:9e97",
+        "name": "ns2.f5cloudservices.com"
+      }
+    ]
+  },
+  "create_time": "2020-06-15T18:39:30.351671Z",
+  "update_time": "2020-06-15T18:39:59.840267Z",
+  "cancel_time": null,
+  "end_time": null
+}

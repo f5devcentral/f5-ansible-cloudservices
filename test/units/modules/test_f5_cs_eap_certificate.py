@@ -57,44 +57,75 @@ def load_fixture(name):
 
 class TestParameters(unittest.TestCase):
     def test_module_parameters(self):
-        args = dict(
+        subscription = dict(
             subscription_id='s-xxxxxxxxxx',
+            enabled=True,
+            https_port=443,
+            https_redirect=True,
+            update_comment='update SSL certificate'
+        )
+
+        args = dict(
             certificate='cert',
             private_key='key',
             passphrase='pass_phrase',
             certificate_chain='certificate_chain',
-            https_port=443,
-            https_redirect=True,
-            update_comment='update SSL certificate'
-
+            assigned_subscriptions=[
+                subscription
+            ]
         )
 
         p = ModuleParameters(params=args)
 
-        assert p.subscription_id == 's-xxxxxxxxxx'
+        assert p.assigned_subscriptions[0]['subscription_id'] == 's-xxxxxxxxxx'
+        assert p.assigned_subscriptions[0]['enabled'] is True
+        assert p.assigned_subscriptions[0]['https_port'] == 443
+        assert p.assigned_subscriptions[0]['https_redirect'] is True
+        assert p.assigned_subscriptions[0]['update_comment'] == 'update SSL certificate'
         assert p.certificate == 'cert'
         assert p.private_key == 'key'
         assert p.passphrase == 'pass_phrase'
         assert p.certificate_chain == 'certificate_chain'
-        assert p.https_port == 443
-        assert p.https_redirect is True
-        assert p.update_comment == 'update SSL certificate'
 
 
 class TestManager(unittest.TestCase):
     def setUp(self):
         self.spec = ArgumentSpec()
 
+        get_subscription_fake = load_fixture('f5_cs_eap_certificate_get_subscription.json')
+        get_subscriptions_by_type_fake = load_fixture('f5_cs_eap_certificate_get_subscriptions.json')
+        update_subscription_fake = load_fixture('f5_cs_eap_certificate_update_subscription.json')
+        post_certificate_fake = load_fixture('f5_cs_eap_certificate_post_certificate.json')
+        get_certificates_fake = load_fixture('f5_cs_eap_certificate_get_certificates.json')
+        get_current_user_fake = load_fixture('f5_cs_subscription_app_get_user.json')
+
+        connection = Mock()
+        self.api_client = CloudservicesApi(connection)
+        self.api_client.login = Mock()
+        self.api_client.get_subscription_by_id = Mock(return_value=get_subscription_fake)
+        self.api_client.get_subscriptions_by_type = Mock(return_value=get_subscriptions_by_type_fake)
+        self.api_client.update_subscription = Mock(return_value=update_subscription_fake)
+        self.api_client.post_certificate = Mock(return_value=post_certificate_fake)
+        self.api_client.get_certificates = Mock(return_value=get_certificates_fake)
+        self.api_client.get_current_user = Mock(return_value=get_current_user_fake)
+        self.api_client.retire_certificate = Mock(return_value=True)
+
     def test_certificate_upload(self, *args):
-        set_module_args(dict(
+        subscription = dict(
             subscription_id='s-xxxxxxxxxx',
+            enabled=True,
+            update_comment='update SSL certificate'
+        )
+
+        set_module_args(dict(
+            state='present',
             certificate='cert',
             private_key='key',
             passphrase='pass_phrase',
             certificate_chain='certificate_chain',
-            https_port=443,
-            https_redirect=True,
-            update_comment='update SSL certificate'
+            assigned_subscriptions=[
+                subscription
+            ]
         ))
 
         module = AnsibleModule(
@@ -102,24 +133,66 @@ class TestManager(unittest.TestCase):
             supports_check_mode=self.spec.supports_check_mode
         )
 
-        get_subscription_fake = load_fixture('f5_cs_eap_certificate_get_subscription.json')
-        update_subscription_fake = load_fixture('f5_cs_eap_certificate_update_subscription.json')
-        post_certificate_fake = load_fixture('f5_cs_eap_certificate_post_certificate.json')
-
-        connection = Mock()
-        api_client = CloudservicesApi(connection)
-        api_client.login = Mock()
-        api_client.get_subscription_by_id = Mock(return_value=get_subscription_fake)
-        api_client.update_subscription = Mock(return_value=update_subscription_fake)
-        api_client.post_certificate = Mock(return_value=post_certificate_fake)
-
-        mm = ModuleManager(module=module, client=api_client)
+        mm = ModuleManager(module=module, client=self.api_client)
         results = mm.exec_module()
 
         assert results['changed'] is True
-        assert results['subscription_id'] == 's-xxxxxxxxxx'
-        assert results['account_id'] == 'a-xxxxxxxxxx'
-        assert results['configuration']['waf_service']['application']['http']['https_redirect'] is True
-        assert results['configuration']['waf_service']['application']['https']['enabled'] is True
-        assert results['configuration']['waf_service']['application']['https']['port'] == 443
-        assert results['configuration']['waf_service']['application']['https']['tls']['certificate_id'] == 'cert-xxxxxx_xxx'
+        assert results['certificate_id'] == 'cert-xxxxxxxxxx'
+        assert results['expiration_date'] == '2030-02-14T19:46:40Z'
+        assert results['common_name'] == 'fqdn.test.com'
+        subscription = results['assigned_subscriptions'][0]
+        assert subscription['subscription_id'] == 's-xxxxxxxxxx'
+
+    def test_certificate_remove(self, *args):
+        set_module_args(dict(
+            state='absent',
+            certificate_id='cert-xxxxxxxxxx',
+        ))
+
+        module = AnsibleModule(
+            argument_spec=self.spec.argument_spec,
+            supports_check_mode=self.spec.supports_check_mode
+        )
+
+        mm = ModuleManager(module=module, client=self.api_client)
+        results = mm.exec_module()
+
+        assert results['changed'] is True
+
+    def test_certificate_fetch_by_subscription_id(self, *args):
+        set_module_args(dict(
+            state='fetch',
+            subscription_id='s-xxxxxxxxxx',
+        ))
+
+        module = AnsibleModule(
+            argument_spec=self.spec.argument_spec,
+            supports_check_mode=self.spec.supports_check_mode
+        )
+
+        mm = ModuleManager(module=module, client=self.api_client)
+        results = mm.exec_module()
+
+        assert results['changed'] is False
+        assert results['certificate_id'] == 'cert-xxxxxxxxxx'
+        assert results['expiration_date'] == '2030-02-14T19:46:40Z'
+        assert results['common_name'] == 'fqdn.test.com'
+        subscription = results['assigned_subscriptions'][0]
+        assert subscription['subscription_id'] == 's-xxxxxxxxxx'
+
+    def test_certificate_fetch_all(self, *args):
+        set_module_args(dict(
+            state='fetch',
+        ))
+
+        module = AnsibleModule(
+            argument_spec=self.spec.argument_spec,
+            supports_check_mode=self.spec.supports_check_mode
+        )
+
+        mm = ModuleManager(module=module, client=self.api_client)
+        results = mm.exec_module()
+
+        assert results['changed'] is False
+        certificate = results['certificates'][0]
+        assert certificate['id'] == 'cert-xxxxxxxxxx'

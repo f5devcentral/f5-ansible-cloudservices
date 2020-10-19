@@ -1,0 +1,55 @@
+- name: Manage DNS Subscription
+  hosts: webservers
+  gather_facts: false
+  collections:
+    - f5devcentral.cloudservices
+  connection: httpapi
+
+  vars:
+    ansible_network_os: f5devcentral.cloudservices.f5
+    ansible_host: "api.cloudservices.f5.com"
+    ansible_user: "user@example.com"
+    ansible_httpapi_password: "password"
+    ansible_httpapi_use_ssl: yes
+    zone: "fqdn.test.com"
+    dns_server: "12.34.56.78"
+    subscription_id: "s-xxxxxxxxxx"
+
+  tasks:
+    - name: Fetch all Secondary DNS
+      f5_cs_dns:
+        state: "fetch"
+
+    - name: Create Secondary DNS
+      f5_cs_dns:
+        state: "present"
+        service_instance_name: "{{ zone }}"
+        master_servers:
+          - "{{ dns_server }}"
+        activate: true
+      register: test
+
+    - name: Fetch Secondary DNS by subscription id
+      f5_cs_dns:
+        state: "fetch"
+        subscription_id: "{{ test.subscription_id }}"
+
+    - name: Fetch Secondary DNS by zone name
+      f5_cs_dns:
+        state: "fetch"
+        service_instance_name: "{{ zone }}"
+
+    - name: Activate Secondary DNS
+      f5_cs_dns:
+        state: "active"
+        subscription_id: "{{ test.subscription_id }}"
+
+    - name: Suspend Secondary DNS
+      f5_cs_dns:
+        state: "suspended"
+        subscription_id: "{{ test.subscription_id }}"
+
+    - name: Retire Secondary DNS
+      f5_cs_dns:
+        state: "absent"
+        subscription_id: "{{ test.subscription_id }}"

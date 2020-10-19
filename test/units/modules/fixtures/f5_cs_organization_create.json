@@ -1,0 +1,22 @@
+{
+    "id": "a-xxxxxxxxxx",
+    "name": "account",
+    "parent_account_id": "",
+    "status": "active",
+    "level": "0",
+    "signup_provider": "standard",
+    "address": {
+        "street_1": "line 1",
+        "street_2": "line 2",
+        "city": "city",
+        "state": "state",
+        "country": "country",
+        "postal_code": 98000
+    },
+    "phone": "+1 (123) 4567899",
+    "compliant": true,
+    "catalog_items": [],
+    "create_time": "2019-08-19T15:59:33.858609Z",
+    "update_time": "2019-08-19T15:59:33.858609Z",
+    "delete_time": null
+}

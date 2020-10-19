@@ -1,0 +1,82 @@
+{
+    "subscriptions": [
+        {
+            "subscription_id": "s-yyyyyyyyyyy",
+            "account_id": "a-yyyyyyyyyyy",
+            "user_id": "u-yyyyyyyyyyy",
+            "catalog_id": "c-yyyyyyyyyyy",
+            "service_instance_id": "adns-yyyyyyyyyyy",
+            "status": "ACTIVE",
+            "service_instance_name": "yfqdn.demo.com",
+            "deleted": false,
+            "service_type": "adns",
+            "configuration": {
+                "adns_service": {
+                    "master_servers": [
+                        "12.34.56.78"
+                    ],
+                    "zone": "yfqdn.demo.com"
+                },
+                "details": {
+                    "latest_axfr": "2020-09-28T19:51:40Z",
+                    "zone_count": 8
+                },
+                "nameservers": [
+                    {
+                        "ipv4": "107.162.158.150",
+                        "ipv6": "2604:e180:1021::ffff:6ba2:9e96",
+                        "name": "ns1.f5cloudservices.com"
+                    },
+                    {
+                        "ipv4": "107.162.158.151",
+                        "ipv6": "2604:e180:1021::ffff:6ba2:9e97",
+                        "name": "ns2.f5cloudservices.com"
+                    }
+                ]
+            },
+            "create_time": "2020-06-05T00:39:32.252166Z",
+            "update_time": "2020-06-22T16:09:36.008120Z",
+            "cancel_time": null,
+            "end_time": null
+        },
+         {
+            "subscription_id": "s-xxxxxxxxxx",
+            "account_id": "a-xxxxxxxxxx",
+            "user_id": "u-xxxxxxxxxx",
+            "catalog_id": "c-xxxxxxxxxx",
+            "service_instance_id": "adns-xxxxxxxxxx",
+            "status": "ACTIVE",
+            "service_instance_name": "fqdn.demo.com",
+            "deleted": false,
+            "service_type": "adns",
+            "configuration": {
+                "adns_service": {
+                    "master_servers": [
+                        "12.34.56.78"
+                    ],
+                    "zone": "fqdn.demo.com"
+                },
+                "details": {
+                    "latest_axfr": "2020-09-28T19:51:40Z",
+                    "zone_count": 8
+                },
+                "nameservers": [
+                    {
+                        "ipv4": "107.162.158.150",
+                        "ipv6": "2604:e180:1021::ffff:6ba2:9e96",
+                        "name": "ns1.f5cloudservices.com"
+                    },
+                    {
+                        "ipv4": "107.162.158.151",
+                        "ipv6": "2604:e180:1021::ffff:6ba2:9e97",
+                        "name": "ns2.f5cloudservices.com"
+                    }
+                ]
+            },
+            "create_time": "2020-06-05T00:39:32.252166Z",
+            "update_time": "2020-06-22T16:09:36.008120Z",
+            "cancel_time": null,
+            "end_time": null
+        }
+    ]
+}

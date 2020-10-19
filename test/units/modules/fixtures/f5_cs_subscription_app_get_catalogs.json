@@ -4,7 +4,7 @@
       "catalog_id": "c-xxxxxxxxxx",
       "name": "Essential App Protect",
       "description": "Secure your apps and protect your assets.",
-      "status": "STATUS_ACTIVE",
+      "status": "SUBSCRIBED",
       "logo_url": "https://staging-ui.srv.f5aas.com/static/media/logo.6a1ab75a.svg",
       "info_url": "https://www.f5.com/products/ways-to-deploy/cloud-services/security-cloud-services",
       "service_type": "waf",
@@ -94,6 +94,54 @@
       "update_time": "2019-09-25T23:26:52.756514Z",
       "delete_time": null,
       "preview_end_time": null
-    }
+    },
+    {
+            "catalog_id": "c-xxxxxxxxxx",
+            "name": "DNS",
+            "description": "Map and manage your domains and zone files with secondary authoritative DNS.",
+            "status": "STATUS_ACTIVE",
+            "logo_url": "",
+            "info_url": "https://www.f5.com/products/ways-to-deploy/cloud-services/dns-cloud-service",
+            "service_type": "adns",
+            "deleted": false,
+            "preview": false,
+            "providers": [
+                {
+                    "name": "aws",
+                    "preview": false,
+                    "status": "STATUS_ACTIVE",
+                    "info_url": "http://aws.amazon.com/marketplace/pp/B07NKSRQ99",
+                    "invite_only": false,
+                    "request_access_url": "",
+                    "trial_days": 15,
+                    "preview_end_time": null
+                },
+                {
+                    "name": "standard",
+                    "preview": false,
+                    "status": "STATUS_ACTIVE",
+                    "info_url": "https://www.f5.com/products/ways-to-deploy/cloud-services/dns-cloud-service",
+                    "invite_only": false,
+                    "request_access_url": "",
+                    "trial_days": 15,
+                    "preview_end_time": null
+                },
+                {
+                    "name": "contract",
+                    "preview": false,
+                    "status": "STATUS_ACTIVE",
+                    "info_url": "https://www.f5.com/products/ways-to-deploy/cloud-services/dns-cloud-service",
+                    "invite_only": false,
+                    "request_access_url": "",
+                    "trial_days": 0,
+                    "preview_end_time": null
+                }
+            ],
+            "aws_contracts_yearly": false,
+            "create_time": "2019-03-07T07:11:25.419881Z",
+            "update_time": "2019-09-25T23:26:52.756514Z",
+            "delete_time": null,
+            "preview_end_time": null
+        }
   ]
 }
