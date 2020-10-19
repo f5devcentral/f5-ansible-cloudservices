@@ -37,7 +37,6 @@ fixture_path = os.path.join(os.path.dirname(__file__), 'fixtures')
 fixture_data = {}
 
 
-
 def load_fixture(name):
     path = os.path.join(fixture_path, name)
 
@@ -90,28 +89,51 @@ class TestParameters(unittest.TestCase):
 class TestSubscriptionAppCreate(unittest.TestCase):
     def setUp(self):
         self.spec = ArgumentSpec()
+        get_catalogs_fake = load_fixture('f5_cs_subscription_app_get_catalogs.json')
+        get_user_fake = load_fixture('f5_cs_subscription_app_get_user.json')
+        get_subscription_fake = load_fixture('f5_cs_eap_subscription_app_create_get.json')
+        activate_subscription_fake = load_fixture('f5_cs_eap_subscription_app_create_activate.json')
+        get_subscriptions_fake = load_fixture('f5_cs_eap_certificate_get_subscriptions.json')
+        connection = Mock()
+        self.api_client = CloudservicesApi(connection)
+        self.api_client.login = Mock()
+        self.api_client.get_catalogs = Mock(return_value=get_catalogs_fake)
+        self.api_client.get_current_user = Mock(return_value=get_user_fake)
+        self.api_client.get_subscription_by_id = Mock(return_value=get_subscription_fake)
+        self.api_client.get_subscriptions_by_type = Mock(return_value=get_subscriptions_fake)
+        self.api_client.activate_subscription = Mock(return_value=activate_subscription_fake)
+        self.api_client.get_subscription_status = Mock(return_value=activate_subscription_fake)
+
+        self.api_client.create_subscription = Mock(side_effect=self.create_subscription)
+        self.api_client.retire_subscription = Mock(side_effect=self.retire_subscription)
+        self.api_client.update_subscription = Mock(side_effect=self.update_subscription)
 
     def create_subscription(self, payload, *args, **kwargs):
         assert payload['account_id'] == 'a-xxxxxxxxxx'
         assert payload['catalog_id'] == 'c-xxxxxxxxxx'
-        assert payload['service_instance_name'] == 'fqdn.demo.com'
-        assert payload['configuration']['waf_service']['application']['fqdn'] == 'fqdn.demo.com'
-        assert payload['configuration']['waf_service']['application']['description'] == 'fqdn.demo.com'
+        assert payload['service_instance_name'] == 'new-fqdn.demo.com'
+        assert payload['configuration']['waf_service']['application']['fqdn'] == 'new-fqdn.demo.com'
+        assert payload['configuration']['waf_service']['application']['description'] == ''
         return load_fixture('f5_cs_eap_subscription_app_create.json')
 
     def update_subscription(self, payload, subscription_id, *args, **kwargs):
         assert subscription_id == 's-xxxxxxxxxx'
         assert payload['account_id'] == 'a-xxxxxxxxxx'
         assert payload['catalog_id'] == 'c-xxxxxxxxxx'
-        assert payload['service_instance_name'] == 'fqdn.demo.com'
-        assert payload['configuration']['waf_service']['application']['fqdn'] == 'fqdn.demo.com'
-        assert payload['configuration']['waf_service']['application']['description'] == 'fqdn.demo.com'
+        assert payload['service_instance_name'] == 'new-fqdn.demo.com'
+        assert payload['configuration']['waf_service']['application']['fqdn'] == 'new-fqdn.demo.com'
+        assert payload['configuration']['waf_service']['application']['description'] == ''
         assert payload['configuration']['waf_service']['application']['waf_regions']['aws']['us-east-1']['endpoint']['ips'] == ['192.168.1.1']
         return load_fixture('f5_cs_eap_subscription_app_create_update.json')
 
+    def retire_subscription(self, payload, subscription_id, *args, **kwargs):
+        assert subscription_id == 's-xxxxxxxxxx'
+        assert payload['subscription_id'] == 's-xxxxxxxxxx'
+        return load_fixture('f5_cs_eap_subscription_app_create_retire.json')
+
     def test_subscription_app_create(self, *args):
         set_module_args(dict(
-            service_instance_name='fqdn.demo.com'
+            service_instance_name='new-fqdn.demo.com'
         ))
 
         module = AnsibleModule(
@@ -119,40 +141,35 @@ class TestSubscriptionAppCreate(unittest.TestCase):
             supports_check_mode=self.spec.supports_check_mode
         )
 
-        get_catalogs_fake = load_fixture('f5_cs_subscription_app_get_catalogs.json')
-        get_user_fake = load_fixture('f5_cs_subscription_app_get_user.json')
-        get_subscription_fake = load_fixture('f5_cs_eap_subscription_app_create_get.json')
-        activate_subscription_fake = load_fixture('f5_cs_eap_subscription_app_create_activate.json')
-        connection = Mock()
-        api_client = CloudservicesApi(connection)
-        api_client.login = Mock()
-
-        api_client.get_catalogs = Mock(return_value=get_catalogs_fake)
-        api_client.get_current_user = Mock(return_value=get_user_fake)
-        api_client.get_subscription_by_id = Mock(return_value=get_subscription_fake)
-        api_client.activate_subscription = Mock(return_value=activate_subscription_fake)
-        api_client.get_subscription_status = Mock(return_value=activate_subscription_fake)
-
-        api_client.create_subscription = Mock(side_effect=self.create_subscription)
-        api_client.update_subscription = Mock(side_effect=self.update_subscription)
-
-        mm = ModuleManager(module=module, client=api_client)
+        mm = ModuleManager(module=module, client=self.api_client)
         results = mm.exec_module()
-
         assert results['changed'] is True
-        assert results['account_id'] == 'a-xxxxxxxxxx'
-        assert results['catalog_id'] == 'c-xxxxxxxxxx'
-        assert results['subscription_id'] == 's-xxxxxxxxxx'
-        assert results['service_instance_name'] == 'fqdn.demo.com'
-        assert results['configuration']['details']['CNAMEValue'] == 'waf-xxxxxxxxxx.waf.prd.f5aas.com'
-        assert results['configuration']['waf_service']['application']['fqdn'] == 'fqdn.demo.com'
-        assert results['configuration']['waf_service']['application']['description'] == 'fqdn.demo.com'
-        assert results['configuration']['waf_service']['application']['waf_regions']['aws']['us-east-1']['endpoint']['ips'] == ['192.168.1.1']
 
+    def test_subscription_app_create_with_region(self, *args):
+        aws_regions=dict(
+              name="us-west-1",
+              value=dict(
+                  endpoint=dict(
+                      http=dict(enabled=True, port=80),
+                      ips=["12.34.56.78"]
+                  )
+              )
+        )
 
-class TestSubscriptionFetch(unittest.TestCase):
-    def setUp(self):
-        self.spec = ArgumentSpec()
+        set_module_args(dict(
+            service_instance_name='new-fqdn.demo.com',
+            waf_regions=dict(aws=[aws_regions])
+        ))
+
+        module = AnsibleModule(
+            argument_spec=self.spec.argument_spec,
+            supports_check_mode=self.spec.supports_check_mode
+        )
+
+        mm = ModuleManager(module=module, client=self.api_client)
+        results = mm.exec_module()
+        assert results['changed'] is True
+
 
     def test_subscription_fetch(self, *args):
         set_module_args(dict(
@@ -165,14 +182,11 @@ class TestSubscriptionFetch(unittest.TestCase):
             supports_check_mode=self.spec.supports_check_mode
         )
 
-        get_subscription_fake = load_fixture('f5_cs_eap_subscription_app_fetch.json')
         connection = Mock()
         api_client = CloudservicesApi(connection)
         api_client.login = Mock()
 
-        api_client.get_subscription_by_id = Mock(return_value=get_subscription_fake)
-
-        mm = ModuleManager(module=module, client=api_client)
+        mm = ModuleManager(module=module, client=self.api_client)
         results = mm.exec_module()
 
         assert results['changed'] is False
@@ -182,18 +196,8 @@ class TestSubscriptionFetch(unittest.TestCase):
         assert results['service_instance_name'] == 'fqdn.demo.com'
         assert results['configuration']['details']['CNAMEValue'] == 'waf-xxxxxxxxxx.waf.prd.f5aas.com'
         assert results['configuration']['waf_service']['application']['fqdn'] == 'fqdn.demo.com'
-        assert results['configuration']['waf_service']['application']['description'] == 'fqdn.demo.com'
-        assert results['configuration']['waf_service']['application']['waf_regions']['aws']['us-east-1']['endpoint']['ips'] == ['192.168.1.1']
-
-
-class TestSubscriptionRetire(unittest.TestCase):
-    def setUp(self):
-        self.spec = ArgumentSpec()
-
-    def retire_subscription(self, payload, subscription_id, *args, **kwargs):
-        assert subscription_id == 's-xxxxxxxxxx'
-        assert payload['subscription_id'] == 's-xxxxxxxxxx'
-        return load_fixture('f5_cs_eap_subscription_app_create_retire.json')
+        assert results['configuration']['waf_service']['application']['description'] == ''
+        assert results['configuration']['waf_service']['application']['waf_regions']['aws']['eu-west-2']['endpoint']['ips'] == ['192.168.1.1']
 
     def test_subscription_retire(self, *args):
         set_module_args(dict(
@@ -206,22 +210,32 @@ class TestSubscriptionRetire(unittest.TestCase):
             supports_check_mode=self.spec.supports_check_mode
         )
 
-        connection = Mock()
-        api_client = CloudservicesApi(connection)
-        api_client.login = Mock()
-        api_client.retire_subscription = Mock(side_effect=self.retire_subscription)
-
-        mm = ModuleManager(module=module, client=api_client)
+        mm = ModuleManager(module=module, client=self.api_client)
         results = mm.exec_module()
 
         assert results['changed'] is True
-        assert results['status'] == 'RETIRED'
         assert results['subscription_id'] == 's-xxxxxxxxxx'
 
 
 class TestSubscriptionBatchUpdate(unittest.TestCase):
     def setUp(self):
         self.spec = ArgumentSpec()
+        get_catalogs_fake = load_fixture('f5_cs_subscription_app_get_catalogs.json')
+        get_user_fake = load_fixture('f5_cs_subscription_app_get_user.json')
+        get_subscription_fake = load_fixture('f5_cs_eap_subscription_app_create_get.json')
+        activate_subscription_fake = load_fixture('f5_cs_eap_subscription_app_create_activate.json')
+        get_subscriptions_fake = load_fixture('f5_cs_eap_certificate_get_subscriptions.json')
+        connection = Mock()
+        self.api_client = CloudservicesApi(connection)
+        self.api_client.login = Mock()
+        self.api_client.get_catalogs = Mock(return_value=get_catalogs_fake)
+        self.api_client.get_current_user = Mock(return_value=get_user_fake)
+        self.api_client.get_subscription_by_id = Mock(return_value=get_subscription_fake)
+        self.api_client.get_subscriptions_by_type = Mock(return_value=get_subscriptions_fake)
+        self.api_client.activate_subscription = Mock(return_value=activate_subscription_fake)
+        self.api_client.get_subscription_status = Mock(return_value=activate_subscription_fake)
+
+        self.api_client.update_subscription = Mock(side_effect=self.update_subscription)
 
     def update_subscription(self, payload, subscription_id, *args, **kwargs):
         assert subscription_id == 's-xxxxxxxxxx'
@@ -242,25 +256,83 @@ class TestSubscriptionBatchUpdate(unittest.TestCase):
             argument_spec=self.spec.argument_spec,
             supports_check_mode=self.spec.supports_check_mode
         )
-
-        get_subscription_fake = load_fixture('f5_cs_eap_subscription_app_update_default.json')
-        connection = Mock()
-        api_client = CloudservicesApi(connection)
-        api_client.login = Mock()
-        api_client.update_subscription = Mock(side_effect=self.update_subscription)
-        api_client.get_subscription_by_id = Mock(return_value=get_subscription_fake)
-
-        mm = ModuleManager(module=module, client=api_client)
+        mm = ModuleManager(module=module, client=self.api_client)
         results = mm.exec_module()
 
         assert results['changed'] is True
         assert results['subscription_id'] == 's-xxxxxxxxxx'
         assert results['configuration']['waf_service']['custom_parameter'] is True
 
+    def test_subscription_batch_update_no_change(self, *args):
+        set_module_args(dict(
+            subscription_id='s-xxxxxxxxxx',
+            service_instance_name='fqdn.demo.com"',
+            configuration=dict(
+                waf_service=dict(
+                    application=dict(
+                        fqdn="fqdn.demo.com",
+                        description="",
+                        http=dict(
+                            enabled=True,
+                            https_redirect=False,
+                            port=80
+                        ),
+                        https=dict(
+                            enabled=True,
+                            port=443,
+                            tls=dict(
+                                certificate_id="cert-xxxxxxxxxx"
+                            )
+                        ),
+                        waf_regions=dict(
+                            aws={
+                                'eu-west-2': {
+                                    'endpoint': {
+                                        'http': {
+                                            'enabled': True,
+                                            'port': 80
+                                        },
+                                        'ips': ['192.168.1.1']
+                                    }
+                                }
+                            }
+                        )
+                    )
+                ),
+
+            )
+        ))
+
+        module = AnsibleModule(
+            argument_spec=self.spec.argument_spec,
+            supports_check_mode=self.spec.supports_check_mode
+        )
+        mm = ModuleManager(module=module, client=self.api_client)
+        results = mm.exec_module()
+
+        assert results['changed'] is False
+        assert results['subscription_id'] == 's-xxxxxxxxxx'
+
 
 class TestSubscriptionPatchUpdate(unittest.TestCase):
     def setUp(self):
         self.spec = ArgumentSpec()
+        get_catalogs_fake = load_fixture('f5_cs_subscription_app_get_catalogs.json')
+        get_user_fake = load_fixture('f5_cs_subscription_app_get_user.json')
+        get_subscription_fake = load_fixture('f5_cs_eap_subscription_app_create_get.json')
+        activate_subscription_fake = load_fixture('f5_cs_eap_subscription_app_create_activate.json')
+        get_subscriptions_fake = load_fixture('f5_cs_eap_certificate_get_subscriptions.json')
+        connection = Mock()
+        self.api_client = CloudservicesApi(connection)
+        self.api_client.login = Mock()
+        self.api_client.get_catalogs = Mock(return_value=get_catalogs_fake)
+        self.api_client.get_current_user = Mock(return_value=get_user_fake)
+        self.api_client.get_subscription_by_id = Mock(return_value=get_subscription_fake)
+        self.api_client.get_subscriptions_by_type = Mock(return_value=get_subscriptions_fake)
+        self.api_client.activate_subscription = Mock(return_value=activate_subscription_fake)
+        self.api_client.get_subscription_status = Mock(return_value=activate_subscription_fake)
+
+        self.api_client.update_subscription = Mock(side_effect=self.update_subscription)
 
     def update_subscription(self, payload, subscription_id, *args, **kwargs):
         assert subscription_id == 's-xxxxxxxxxx'
@@ -284,14 +356,7 @@ class TestSubscriptionPatchUpdate(unittest.TestCase):
             supports_check_mode=self.spec.supports_check_mode
         )
 
-        get_subscription_fake = load_fixture('f5_cs_eap_subscription_app_update_default.json')
-        connection = Mock()
-        api_client = CloudservicesApi(connection)
-        api_client.login = Mock()
-        api_client.update_subscription = Mock(side_effect=self.update_subscription)
-        api_client.get_subscription_by_id = Mock(return_value=get_subscription_fake)
-
-        mm = ModuleManager(module=module, client=api_client)
+        mm = ModuleManager(module=module, client=self.api_client)
         results = mm.exec_module()
 
         assert results['changed'] is True

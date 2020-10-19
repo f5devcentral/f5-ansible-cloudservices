@@ -20,7 +20,7 @@ Installing the Build
     git clone git@github.com:f5devcentral/f5-ansible-cloudservices.git
     cd ./f5-ansible-cloudservices
     ansible-galaxy collection build --force
-    ansible-galaxy collection install f5devcentral-cloudservices-1.0.0.tar.gz -p ./collections/
+    ansible-galaxy collection install f5devcentral-cloudservices-1.0.2.tar.gz -p ./collections/
 
     # Approach 2
     # To install from the Ansible Galaxy
@@ -56,7 +56,11 @@ API User's Guide: https://clouddocs.f5.com/cloud-services/latest/f5-cloud-servic
  - f5_cs_eap_ip_enforcement
  - f5_cs_eap_subscription_app
  - f5_cs_dnslb_subscription_app 
-
+ - f5_cs_catalog_items 
+ - f5_cs_dnslb_ip_endpoints 
+ - f5_cs_eap_protection_mode 
+ - f5_cs_organizations 
+ - f5_cs_users 
 Example Playbook
 ------------
 
@@ -79,16 +83,19 @@ Ansible modules are documented within each the .py code of each module itself wi
         ansible_httpapi_use_ssl: yes
 
       tasks:
-        - name: Apply SSL Certificate
-          f5_cs_eap_certificate:
-            subscription_id: "s-xxxxxxxxxx"
-            certificate: "{{ lookup('file', './fqdn.cert') }}"
-            private_key: "{{ lookup('file', './fqdn.key') }}"
-            passphrase: "demo_ansible"
-            certificate_chain: "{{ lookup('file', './chain.cert') }}"
-            https_port: 443
-            https_redirect: true
-            update_comment: "update SSL certificate"
+		- name: Apply SSL Certificate 
+		  f5_cs_eap_certificate:
+			state: "present"
+			certificate: "{{ lookup('file', './cert/cert.crt') }}"
+			private_key: "{{ lookup('file', './cert/key.pem') }}"
+			certificate_chain: "{{ lookup('file', './cert/chain.cert') }}"
+			passphrase: "123456"
+			assigned_subscriptions:
+			  - subscription_id: "s-xxxxxxxxxx"
+				enabled: true
+				https_port: 443
+				https_redirect: true
+				update_comment: "update SSL certificate"
 ```
 
 Bugs, Issues

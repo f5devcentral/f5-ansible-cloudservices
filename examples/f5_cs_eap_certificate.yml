@@ -11,15 +11,53 @@
     ansible_user: "user@example.com"
     ansible_httpapi_password: "password"
     ansible_httpapi_use_ssl: yes
+    subscription_id: "s-xxxxxxxxxx"
+    certificate_id: "cert-xxxxxxxxxx"
 
   tasks:
-    - name: Apply SSL Certificate
+    - name: Apply SSL Certificate from File
       f5_cs_eap_certificate:
-        subscription_id: "s-xxxxxxxxxx"
-        certificate: "{{ lookup('file', './fqdn.cert') }}"
-        private_key: "{{ lookup('file', './fqdn.key') }}"
-        passphrase: "demo_ansible"
-        certificate_chain: "{{ lookup('file', './chain.cert') }}"
-        https_port: 443
-        https_redirect: true
-        update_comment: "update SSL certificate"
+        state: "present"
+        certificate: "{{ lookup('file', './cert/cert.crt') }}"
+        private_key: "{{ lookup('file', './cert/key.pem') }}"
+        passphrase: "123456"
+        assigned_subscriptions:
+          - subscription_id: "{{ subscription_id }}"
+            enabled: true
+            https_port: 443
+            https_redirect: true
+            update_comment: "update SSL certificate"
+
+    - name: Apply existing SSL Certificate
+      f5_cs_eap_certificate:
+        state: "present"
+        certificate_id: "{{ certificate_id }}"
+        assigned_subscriptions:
+          - subscription_id: "{{ subscription_id }}"
+            https_port: 443
+            https_redirect: true
+            update_comment: "Update SSL Certificate"
+
+    - name: Fetch existing certificate by certificate id
+      f5_cs_eap_certificate:
+        state: "fetch"
+        certificate_id: "{{ certificate_id }}"
+
+    - name: Fetch existing certificate by subscription id
+      f5_cs_eap_certificate:
+        state: "fetch"
+        subscription_id: "{{ subscription_id }}"
+
+    - name: Fetch all certificates
+      f5_cs_eap_certificate:
+        state: "fetch"
+
+    - name: Disable certificate for subscription
+      f5_cs_eap_certificate:
+        state: "absent"
+        subscription_id: "{{ subscription_id }}"
+
+    - name: Remove certificate
+      f5_cs_eap_certificate:
+        state: "absent"
+        certificate_id: "{{ certificate_id }}"

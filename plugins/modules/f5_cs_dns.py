@@ -16,27 +16,30 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 
 DOCUMENTATION = r'''
 ---
-module: f5_cs_dnslb_subscription_app
-short_description: Manage DNS Load Balance Subscription
+module: f5_cs_dns
+short_description: Manage DNS Subscription
 description: 
-    - This module will manage DNS Load Balance application for F5 CloudServices
+    - This module will manage DNS for F5 CloudServices
 version_added: 1.0
 options:
     subscription_id:
         description:
             - ID of existing subscription
-    service_instance_name:
-        description:
-            - FQDN record name or application name if FQDN was specified in the configuration property
-        required: True            
     account_id:
         description:
             - ID of your main user’s primary account (where you will create instances)
+    service_instance_name:
+        description:
+            - zone name
+    configuration:
+        description: detailed DNS configuration
     state:
         description:
-            - When C(present), will create or update DNS LB subscription. 
-            - When C(absent), will remove DNS LB subscription
-            - When C(fetch) will return subscription configuration by subscription_id
+            - When C(present), will create or update DNS subscription. 
+            - When C(absent), will remove DNS subscription
+            - When C(fetch) will return subscription configuration by subscription_id of all subscriptions if not subscription id is not provided
+            - When C(active) will activate subscription
+            - When C(suspended) will suspend subscription
         default: present
         choices:
             - present
@@ -44,51 +47,31 @@ options:
             - fetch
             - active
             - suspended
-    patch:
-        description:
-            - When C(True), will merge provided configuration property with existing cloud configuration
-        default: False
-    configuration:
-        update_comment:
-            description: 
-                - Brief description of changes
-            default: Update DNS LB application
-        gslb_service:
-            description: 
-                - Describes DNS Load Balance service instance configuration. 
+
 author:
   - Alex Shemyakin
 '''
 
 EXAMPLES = '''
 description: 
-    - The examples can be found in /examples/f5_cs_dnslb_subscription_app.yml
+    - The examples can be found in /examples/f5_cs_dns.yml
 '''
 
 RETURN = r'''
-subscription_id
-    description: ID of the new or changed DNS LB application
+subscription_id:
+    description: ID of the new or changed DNS application
     sample: s-xxxxxxxxxx
-account_id
+account_id:
     description: ID of the account with changes
     sample: a-xxxxxxxxxx
-service_instance_name
-    description: DNS LB application name or FQDN
-    sample: fqdn.demo.net
-configuration
-    description: The DNS LB application configuration from the cloud
-    returned: changed
-    type: complex
-    contains:
-        gslb_service:
-            description: DNS LB configuration
-            sample: DNS LB Configuration
-        details:
-            description: Additional properties, such as CNAME or recommended zone list
-            sample: DNS LB Details
+configuration:
+    description: detailed DNS configuration
+service_instance_name:
+    description: DNS zone name
 apps:
-    description: list of available DNSLB apps
-
+    description: list of all available DNS subscriptions
+state:
+    description: DNS subscription state
 '''
 
 try:
@@ -103,30 +86,26 @@ except ImportError:
 
 class Parameters(AnsibleF5Parameters):
     updatables = [
-        'configuration', 'account_id', 'catalog_id', 'subscription_id', 'service_instance_name', 'status', 'apps'
+        'configuration', 'account_id', 'service_instance_name', 'subscription_id', 'state', 'apps'
     ]
 
     returnables = [
-        'configuration', 'account_id', 'catalog_id', 'subscription_id', 'service_instance_name', 'status', 'apps'
+        'configuration', 'account_id', 'service_instance_name', 'subscription_id', 'state', 'apps'
     ]
-
-    @property
-    def description(self):
-        if self._values['description'] is None:
-            return ""
-        return self._values['description']
 
 
 class ApiParameters(Parameters):
     @property
     def configuration(self):
-        if self._values['configuration'] is None:
-            return None
         return self._values['configuration']
 
     @property
     def status(self):
         return self._values['status']
+
+    @property
+    def apps(self):
+        return self._values['apps']
 
 
 class ModuleParameters(Parameters):
@@ -143,10 +122,6 @@ class ModuleParameters(Parameters):
     @property
     def account_id(self):
         return self._values['account_id']
-
-    @property
-    def patch(self):
-        return self._values['patch']
 
     @property
     def activate(self):
@@ -172,9 +147,7 @@ class UsableChanges(Changes):
 
 
 class ReportableChanges(Changes):
-    @property
-    def state(self):
-        return self._values['status']
+    pass
 
 
 class Difference(object):
@@ -219,14 +192,6 @@ class Difference(object):
         return self.have.account_id
 
     @property
-    def catalog_id(self):
-        return self.have.catalog_id
-
-    @property
-    def status(self):
-        return self.have.status
-
-    @property
     def service_instance_name(self):
         return self.have.service_instance_name
 
@@ -244,9 +209,6 @@ class Difference(object):
 
     @property
     def configuration(self):
-        if self.want.patch:
-            return dict(self._merge_dicts(self.have.configuration, self.want.configuration))
-
         return self.have.configuration
 
     @property
@@ -287,16 +249,19 @@ class ModuleManager(object):
         if state == 'present':
             changed = self.present()
         elif state == 'fetch':
-            if self.want.subscription_id:
-                self.read_from_cloud(subscription_id=self.want.subscription_id)
-            else:
+            if self.want.subscription_id is None and self.want.service_instance_name is None:
                 self.read_subscriptions_from_cloud()
+            elif self.exists() is False:
+                raise F5ModuleError('subscription not found')
         elif state == 'absent':
-            changed = self.retire()
+            if self.exists():
+                changed = self.retire()
         elif state == 'active':
-            changed = self.activate()
+            if self.exists():
+                changed = self.activate()
         elif state == 'suspended':
-            changed = self.suspend()
+            if self.exists():
+                changed = self.suspend()
 
         reportable = ReportableChanges(params=self.changes.to_return())
         changes = reportable.to_return()
@@ -314,12 +279,15 @@ class ModuleManager(object):
             )
 
     def retire(self):
-        payload = {
-            'subscription_id': self.want.subscription_id,
-            'omit_config': True
-        }
-        self.remove_from_cloud(payload, subscription_id=self.want.subscription_id)
-        return True
+        result = False
+        if self.exists():
+            payload = {
+                'subscription_id': self.want.subscription_id,
+                'omit_config': True
+            }
+            self.remove_from_cloud(payload, subscription_id=self.want.subscription_id)
+            result = True
+        return result
 
     def present(self):
         if self.exists():
@@ -328,8 +296,10 @@ class ModuleManager(object):
             return self.create()
 
     def exists(self):
-        if self.want.subscription_id:
-            return True
+        if self.want.service_instance_name:
+            return self.check_subscription_on_cloud_by_zone_name(self.want.service_instance_name)
+        elif self.want.subscription_id:
+            return self.check_subscription_on_cloud_by_subscription_id(self.want.subscription_id)
         else:
             return False
 
@@ -337,14 +307,22 @@ class ModuleManager(object):
         if self.want.catalog_id:
             return self.want.catalog_id
         catalogs = self.client.get_catalogs()
-        dnslb_catalog = next(c for c in catalogs['Catalogs'] if c['service_type'] == 'gslb')
-        return dnslb_catalog['catalog_id']
+        dns_catalog = next(c for c in catalogs['Catalogs'] if c['service_type'] == 'adns')
+        return dns_catalog['catalog_id']
 
     def get_account_id(self):
         if self.want.account_id:
             return self.want.account_id
         current_user = self.client.get_current_user()
         return current_user['primary_account_id']
+
+    def get_default_configuration(self):
+        return dict(
+            adns_service=dict(
+                zone=self.want.service_instance_name,
+                master_servers=self.want.master_servers,
+            )
+        )
 
     def create(self):
         account_id = self.get_account_id()
@@ -354,18 +332,24 @@ class ModuleManager(object):
             'account_id': account_id,
             'catalog_id': catalog_id,
             'service_instance_name': self.want.service_instance_name,
-            'service_type': 'gslb',
-            'configuration': self.want.configuration,
+            'service_type': 'adns',
+            'configuration': self.want.configuration or self.get_default_configuration(),
         }
         self.create_on_cloud(payload)
+
+        if self.want.activate is True:
+            self.activate()
 
         return True
 
     def activate(self):
-        state = self.client.activate_subscription(subscription_id=self.want.subscription_id)
+        if self.have.status == 'ACTIVE':
+            return False
+
+        state = self.client.activate_subscription(self.have.subscription_id)
 
         for retry in range(0, 100):
-            state = self.client.get_subscription_status(subscription_id=self.want.subscription_id)
+            state = self.client.get_subscription_status(self.have.subscription_id)
             if state['status'] == 'ACTIVE':
                 break
             time.sleep(15)
@@ -373,11 +357,13 @@ class ModuleManager(object):
         if state['status'] != 'ACTIVE':
             raise F5ModuleError('cannot activate subscription: ' + state.status)
 
-        self.have = ApiParameters(params=state)
-        self._update_changed_options()
+        self.have.update(dict(status=state['status']))
         return True
 
     def suspend(self):
+        if self.have.status == 'DISABLED':
+            return False
+
         state = self.client.suspend_subscription(subscription_id=self.want.subscription_id)
 
         for retry in range(0, 100):
@@ -389,39 +375,49 @@ class ModuleManager(object):
         if state['status'] != 'DISABLED' or state['service_state'] != 'UNDEPLOYED':
             raise F5ModuleError('cannot suspend subscription: ' + state.status)
 
-        self.have = ApiParameters(params=state)
-        self._update_changed_options()
+        self.have.update(dict(status=state['status']))
         return True
 
     def update_current(self):
-        self.read_from_cloud(subscription_id=self.want.subscription_id)
-
         payload = {
             'account_id': self.have.account_id,
             'catalog_id': self.have.catalog_id,
             'service_instance_name': self.have.service_instance_name,
             'service_type': 'gslb',
-            'configuration': self.changes.configuration,
+            'configuration': self.want.configuration or self.get_default_configuration(),
         }
 
-        if self.want.configuration and self.want.patch is False:
-            payload['configuration'] = self.want.configuration
-        else:
-            if self.changes.configuration.get('details'):
-                del self.changes.configuration['details']
-            if self.changes.configuration.get('nameservers'):
-                del self.changes.configuration['nameservers']
-            payload['configuration'] = self.changes.configuration
+        changed = self.have.configuration['adns_service']['master_servers'].sort() != payload['configuration']['adns_service']['master_servers'].sort() \
+              or self.have.configuration['adns_service']['zone'] != payload['configuration']['adns_service']['zone']
 
-        payload['configuration']['update_comment'] = self.want.update_comment
-
-        self.update_on_cloud(payload, subscription_id=self.want.subscription_id)
-        return True
+        if changed:
+            self.update_on_cloud(payload, subscription_id=self.want.subscription_id)
+        return changed
 
     def get_subscriptions(self):
         account_id = self.get_account_id()
-        response = self.client.get_subscriptions_by_type(subscription_type='gslb', account_id=account_id)
+        response = self.client.get_subscriptions_by_type(subscription_type='adns', account_id=account_id)
         return response.get('subscriptions', [])
+
+    def check_subscription_on_cloud_by_subscription_id(self, subscription_id):
+        result = False
+        subscriptions = self.get_subscriptions()
+        subscription = ([x for x in subscriptions if x['subscription_id'] == subscription_id] or [None])[0]
+        if subscription:
+            self.have = ApiParameters(params=subscription)
+            self._update_changed_options()
+            result = True
+        return result
+
+    def check_subscription_on_cloud_by_zone_name(self, service_instance_name):
+        result = False
+        subscriptions = self.get_subscriptions()
+        subscription = ([x for x in subscriptions if x['service_instance_name'] == service_instance_name] or [None])[0]
+        if subscription:
+            self.have = ApiParameters(params=subscription)
+            self._update_changed_options()
+            result = True
+        return result
 
     def read_subscriptions_from_cloud(self):
         subscriptions = self.get_subscriptions()
@@ -453,18 +449,14 @@ class ArgumentSpec(object):
         argument_spec = dict(
             subscription_id=dict(),
             account_id=dict(),
-            catalog_id=dict(),
             service_instance_name=dict(),
+            master_servers=dict(type=list),
             configuration=dict(type=dict),
             state=dict(
                 default='present',
                 choices=['present', 'absent', 'fetch', 'active', 'suspended']
             ),
-            update_comment=dict(default='update DNS LB configuration'),
-            patch=dict(
-                default=False,
-                type='bool',
-            ),
+            update_comment=dict(default='update DNS configuration'),
             activate=dict(
                 type='bool',
                 default=True,

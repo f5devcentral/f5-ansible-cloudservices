@@ -1,0 +1,48 @@
+- name: Manage Organizations
+  hosts: webservers
+  gather_facts: false
+  collections:
+    - f5devcentral.cloudservices
+  connection: httpapi
+
+  vars:
+    ansible_network_os: f5devcentral.cloudservices.f5
+    ansible_host: "api.cloudservices.f5.com"
+    ansible_user: "user@example.com"
+    ansible_httpapi_password: "password"
+    ansible_httpapi_use_ssl: yes
+    org_name: "organization"
+    account_id: "a-aaZYlj6pDk"
+
+  tasks:
+    - name: Create an organization
+      f5_cs_organization:
+        state: "present"
+        name: "{{ org_name }}"
+        address:
+          street_1: "2310 153rd Ave Se"
+          street_2: ""
+          city: "Bellevue"
+          state: "WA"
+          country: "US"
+          postal_code: "98007-6342"
+        phone: ""
+
+    - name: Fetch all Organizations
+      f5_cs_organization:
+        state: "fetch"
+
+    - name: Fetch by account id
+      f5_cs_organization:
+        state: "fetch"
+        account_id: "{{ account_id }}"
+
+    - name: Fetch by organization name
+      f5_cs_organization:
+        state: "fetch"
+        name: "{{ org_name }}"
+
+    - name: Remove an organization
+      f5_cs_organization:
+        state: "absent"
+        account_id: "{{ account_id }}"

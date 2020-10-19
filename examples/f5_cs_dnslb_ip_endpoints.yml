@@ -1,0 +1,60 @@
+- name: Manage DNS LB IP Endpoints
+  hosts: webservers
+  gather_facts: false
+  collections:
+    - f5devcentral.cloudservices
+  connection: httpapi
+
+  vars:
+    ansible_network_os: f5devcentral.cloudservices.f5
+    ansible_host: "api.cloudservices.f5.com"
+    ansible_user: "user@example.com"
+    ansible_httpapi_password: "password"
+    ansible_httpapi_use_ssl: yes
+    subscription_id: "s-xxxxxxxxxx"
+    endpoint_1: "12.34.56.77"
+    endpoint_2: "12.34.56.78"
+    endpoint_3: "12.34.56.79"
+
+  tasks:
+    - name: Create IP Endpoint
+      f5_cs_dnslb_ip_endpoints:
+        state: "present"
+        subscription_id: "{{ subscription_id }}"
+        ip_endpoints:
+          - virtual_server_type: "cloud"
+            display_name: "first-endpoint"
+            port: 80
+            address: "{{ endpoint_1 }}"
+            monitor: "none"
+
+    - name: Replace IP Endpoint
+      f5_cs_dnslb_ip_endpoints:
+        state: "present"
+        subscription_id: "{{ subscription_id }}"
+        ip_endpoints:
+          - name: "second-endpoint"
+            display_name: "second-endpoint"
+            virtual_server_type: "cloud"
+            port: 80
+            address: "{{ endpoint_2 }}"
+            monitor: "none"
+
+    - name: Add IP Endpoint
+      f5_cs_dnslb_ip_endpoints:
+        append: true
+        subscription_id: "{{ subscription_id }}"
+        ip_endpoints:
+          - name: "third-endpoint"
+            display_name: "third-endpoint"
+            virtual_server_type: "cloud"
+            port: 80
+            address: "{{ endpoint_3 }}"
+            monitor: "none"
+
+    - name: Remove IP Endpoint
+      f5_cs_dnslb_ip_endpoints:
+        state: "absent"
+        subscription_id: "{{ subscription_id }}"
+        ip_endpoints:
+          - name: "third-endpoint"

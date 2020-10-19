@@ -1,0 +1,29 @@
+- name: Manage Subscribed Services
+  hosts: webservers
+  gather_facts: false
+  collections:
+    - f5devcentral.cloudservices
+  connection: httpapi
+
+  vars:
+    ansible_network_os: f5devcentral.cloudservices.f5
+    ansible_host: "api.cloudservices.f5.com"
+    ansible_user: "user@example.com"
+    ansible_httpapi_password: "password"
+    ansible_httpapi_use_ssl: yes
+    service: "eap"
+
+  tasks:
+    - name: Subscribe to eap
+      f5_cs_catalog_items:
+        state: "present"
+        service: "{{ service }}"
+
+    - name: Fetch all subscribed services
+      f5_cs_catalog_items:
+        state: "fetch"
+
+    - name: Unsubscribe from EAP
+      f5_cs_catalog_items:
+        state: "absent"
+        service: "{{ service }}"

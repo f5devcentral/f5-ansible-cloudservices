@@ -1,0 +1,42 @@
+{
+    "invites": [
+        {
+            "invite_id": "i-xxxxxxxxxx",
+            "inviter_user_id": "u-xxxxxxxxxx",
+            "inviter_account_id": "a-xxxxxxxxxx",
+            "role_id": "r-NAYFdYfiR",
+            "status": "pending",
+            "first_name": "",
+            "last_name": "",
+            "invitee_email": "email@email.email",
+            "invitee_account_ids": [
+                "a-xxxxxxxxxx"
+            ],
+            "cascade": "CASCADE_UPWARD",
+            "metadata": {},
+            "create_time": "2020-10-05T17:10:43.386342Z",
+            "update_time": "2020-10-05T17:10:43.386342Z",
+            "delete_time": null,
+            "expire_time": null
+        },
+        {
+            "invite_id": "i-yyyyyyyyyyy",
+            "inviter_user_id": "u-xxxxxxxxxx",
+            "inviter_account_id": "a-yyyyyyyyyyy",
+            "role_id": "r-NAYFdYfiR",
+            "status": "pending",
+            "first_name": "",
+            "last_name": "",
+            "invitee_email": "email2@email.email",
+            "invitee_account_ids": [
+                "a-yyyyyyyyyyy"
+            ],
+            "cascade": "CASCADE_UPWARD",
+            "metadata": {},
+            "create_time": "2020-10-05T23:01:42.465403Z",
+            "update_time": "2020-10-05T23:01:42.465403Z",
+            "delete_time": null,
+            "expire_time": null
+        }
+    ]
+}

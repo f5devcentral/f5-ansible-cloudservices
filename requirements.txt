@@ -5,6 +5,8 @@ cffi
 pytest
 pytest-xdist
 
+pyopenssl
+
 # Test running
 pycodestyle
 flake8

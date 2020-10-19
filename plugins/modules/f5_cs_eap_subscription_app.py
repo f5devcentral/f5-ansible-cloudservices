@@ -4,8 +4,11 @@
 # GNU General Public License v3.0 (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
+
 import time
+import copy
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.connection import Connection
@@ -29,6 +32,8 @@ options:
         description:
             - FQDN record name or application name if FQDN was specified in the configuration property
         required: True            
+    fqdn:
+        description: FQDN record name
     account_id:
         description:
             - ID of your main user’s primary account (where you will create instances)
@@ -42,6 +47,8 @@ options:
             - present
             - absent
             - fetch
+            - active
+            - suspended
     patch:
         description:
             - When C(True), will merge provided configuration property with existing cloud configuration
@@ -58,6 +65,10 @@ options:
         waf_service:
             description: 
                 - Describes Essential App Protect service instance configuration. 
+    wait_status_change:
+        description: wait until the deployment will be completed 
+    waf_regions:
+         description: list of the regions, used for dynamic region variables
 author:
   - Alex Shemyakin
 '''
@@ -68,16 +79,16 @@ description:
 '''
 
 RETURN = r'''
-subscription_id
+subscription_id:
     description: ID of the new or changed EAP application
     sample: s-xxxxxxxxxx
-account_id
+account_id:
     description: ID of the account with changes
     sample: a-xxxxxxxxxx
-service_instance_name
+service_instance_name:
     description: EAP application name or FQDN
     sample: fqdn.demo.net
-configuration
+configuration:
     description: The EAP application configuration from the cloud
     returned: changed
     type: complex
@@ -88,6 +99,8 @@ configuration
         details:
             description: Additional properties, such as CNAME or recommended zone list
             sample: EAP Details
+apps:
+    description: list of available EAP apps
 '''
 
 try:
@@ -97,18 +110,19 @@ try:
     from library.module_utils.common import AnsibleF5Parameters
 except ImportError:
     from ansible_collections.f5devcentral.cloudservices.plugins.module_utils.cloudservices import CloudservicesApi
-    from ansible_collections.f5devcentral.cloudservices.plugins.module_utils.cloudservices import f5_cs_eap_default_policy
+    from ansible_collections.f5devcentral.cloudservices.plugins.module_utils.cloudservices import \
+        f5_cs_eap_default_policy
     from ansible_collections.f5devcentral.cloudservices.plugins.module_utils.common import F5ModuleError
     from ansible_collections.f5devcentral.cloudservices.plugins.module_utils.common import AnsibleF5Parameters
 
 
 class Parameters(AnsibleF5Parameters):
     updatables = [
-        'configuration', 'account_id', 'catalog_id', 'subscription_id', 'service_instance_name', 'status'
+        'configuration', 'account_id', 'catalog_id', 'subscription_id', 'service_instance_name', 'state', 'apps'
     ]
 
     returnables = [
-        'configuration', 'account_id', 'catalog_id', 'subscription_id', 'service_instance_name', 'status'
+        'configuration', 'account_id', 'catalog_id', 'subscription_id', 'service_instance_name', 'state', 'apps'
     ]
 
     @property
@@ -126,14 +140,53 @@ class ApiParameters(Parameters):
         return self._values['configuration']
 
     @property
-    def status(self):
-        return self._values['status']
+    def state(self):
+        return self._values['state']
 
 
 class ModuleParameters(Parameters):
     @property
     def configuration(self):
-        return self._values['configuration']
+        result = self._values.get('configuration', None)
+        aws_regions = self.waf_regions
+        waf_regions = dict(aws=dict())
+        if aws_regions and aws_regions.get('aws', None):
+            for aws_region in aws_regions['aws']:
+                waf_regions['aws'][aws_region['name']] = aws_region['value']
+
+        if result and aws_regions and result.get('waf_service', None) \
+                and result['waf_service'].get('application', None):
+            result['waf_service']['application']['waf_regions'] = waf_regions
+
+        if result is None and self.waf_regions:
+            result = {
+                    'waf_service': {
+                        'application': {
+                            'waf_regions': waf_regions,
+                        },
+                        'policy': f5_cs_eap_default_policy,
+                    }
+                }
+            if self._values['patch'] is not True:
+                result['waf_service']['application']['description'] = ""
+                result['waf_service']['application']['fqdn'] = self.fqdn
+                result['waf_service']['application']['http'] = {
+                    'enabled': True,
+                    'port': 80,
+                }
+                result['waf_service']['application']['https'] = {
+                    'enabled': False,
+                    'port': 443,
+                    'tls': {
+                        'certificate_id': '',
+                    }
+                }
+
+        return result
+
+    @property
+    def waf_regions(self):
+        return self._values.get('waf_regions', None)
 
     @property
     def subscription_id(self):
@@ -152,6 +205,25 @@ class ModuleParameters(Parameters):
     @property
     def activate(self):
         return self._values['activate']
+
+    @property
+    def wait_status_change(self):
+        return self._values['wait_status_change']
+
+    @property
+    def fqdn(self):
+        if self._values['fqdn']:
+            return self._values['fqdn']
+
+        if self._values['service_instance_name']:
+            return self._values['service_instance_name']
+        return None
+
+    @property
+    def service_instance_name(self):
+        if self._values['service_instance_name'] is None:
+            return None
+        return self._values['service_instance_name'][:64]
 
 
 class Changes(Parameters):
@@ -222,12 +294,16 @@ class Difference(object):
         return self.have.catalog_id
 
     @property
-    def status(self):
-        return self.have.status
+    def state(self):
+        return self.have.state
 
     @property
     def service_instance_name(self):
         return self.have.service_instance_name
+
+    @property
+    def apps(self):
+        return self.have.apps
 
     def _merge_dicts(self, dict1, dict2):
         for k in set(dict1.keys()).union(dict2.keys()):
@@ -243,7 +319,7 @@ class Difference(object):
 
     @property
     def configuration(self):
-        if self.want.patch:
+        if self.want.patch and self.want.configuration:
             return dict(self._merge_dicts(self.have.configuration, self.want.configuration))
 
         return self.have.configuration
@@ -282,9 +358,19 @@ class ModuleManager(object):
         if state == 'present':
             changed = self.present()
         elif state == 'fetch':
-            self.read_from_cloud(subscription_id=self.want.subscription_id)
+            if self.want.subscription_id or self.want.service_instance_name:
+                self.exists()
+            else:
+                self.read_subscriptions_from_cloud()
         elif state == 'absent':
-            changed = self.retire()
+            if self.exists():
+                changed = self.retire()
+        elif state == 'active':
+            if self.exists():
+                changed = self.activate(self.have.subscription_id)
+        elif state == 'suspended':
+            if self.exists():
+                changed = self.suspend(self.have.subscription_id)
 
         reportable = ReportableChanges(params=self.changes.to_return())
         changes = reportable.to_return()
@@ -303,10 +389,10 @@ class ModuleManager(object):
 
     def retire(self):
         payload = {
-            'subscription_id': self.want.subscription_id,
+            'subscription_id': self.have.subscription_id,
             'omit_config': True
         }
-        self.remove_from_cloud(payload, subscription_id=self.want.subscription_id)
+        self.remove_from_cloud(payload, subscription_id=self.have.subscription_id)
         return True
 
     def present(self):
@@ -316,10 +402,19 @@ class ModuleManager(object):
             return self.create()
 
     def exists(self):
+        subscriptions = self.get_subscriptions()
+        subscription = None
         if self.want.subscription_id:
-            return True
+            subscription = ([s for s in subscriptions if s['subscription_id'] == self.want.subscription_id] or [None])[
+                0]
         else:
-            return False
+            subscription = \
+            ([s for s in subscriptions if s['service_instance_name'] == self.want.service_instance_name] or [None])[0]
+        if subscription is not None:
+            self.have = ApiParameters(params=subscription)
+            self._update_changed_options()
+            return True
+        return False
 
     def get_catalog_id(self):
         if self.want.catalog_id:
@@ -343,8 +438,8 @@ class ModuleManager(object):
             'configuration': {
                 'waf_service': {
                     'application': {
-                        'description': self.want.service_instance_name,
-                        'fqdn': self.want.service_instance_name,
+                        'description': '',
+                        'fqdn': self.want.fqdn,
                         'http': {
                             'enabled': True,
                             'port': 80,
@@ -360,12 +455,14 @@ class ModuleManager(object):
         self.create_on_cloud(payload)
 
         discovery = None
-        for retry in range(0, 12):
-            time.sleep(10)
+        for retry in range(0, 5):
             subscription = self.client.get_subscription_by_id(self.have.subscription_id)
             if subscription['configuration'].get('details'):
-                discovery = subscription['configuration']['details']['discovery']
-                break
+                if subscription['configuration']['details']['discovery'] \
+                        and subscription['configuration']['details']['discovery']['ipGeolocations']:
+                    discovery = subscription['configuration']['details']['discovery']
+                    break
+            time.sleep(15)
 
         if discovery is None:
             raise F5ModuleError('Auto discovery failed')
@@ -373,8 +470,8 @@ class ModuleManager(object):
         return {
             'waf_service': {
                 'application': {
-                    'description': self.want.service_instance_name,
-                    'fqdn': self.want.service_instance_name,
+                    'description': '',
+                    'fqdn': self.want.fqdn,
                     'http': {
                         'enabled': True,
                         'port': 80,
@@ -433,44 +530,110 @@ class ModuleManager(object):
             self.update_on_cloud(payload, subscription_id=self.have.subscription_id)
 
         if self.want.activate:
-            self.activate()
+            self.activate(self.have.subscription_id)
 
         return True
 
-    def activate(self):
-        state = self.client.activate_subscription(subscription_id=self.have.subscription_id)
+    def activate(self, subscription_id):
+        state = self.client.activate_subscription(subscription_id)
 
-        for retry in range(0, 12):
-            time.sleep(10)
-            state = self.client.get_subscription_status(subscription_id=self.have.subscription_id)
-            if state['status'] == 'ACTIVE':
+        if not self.want.wait_status_change:
+            return
+
+        for retry in range(0, 100):
+            state = self.client.get_subscription_status(subscription_id)
+            if state['status'] == 'ACTIVE' and state['service_state'] == 'DEPLOYED':
                 break
+            time.sleep(15)
 
-        if state['status'] != 'ACTIVE':
+        if state['status'] != 'ACTIVE' or state['service_state'] != 'DEPLOYED':
             raise F5ModuleError('cannot activate subscription: ' + state.status)
 
-    def update_current(self):
-        self.read_from_cloud(subscription_id=self.want.subscription_id)
+    def suspend(self, subscription_id):
+        state = self.client.suspend_subscription(subscription_id)
 
+        if not self.want.wait_status_change:
+            return
+
+        for retry in range(0, 100):
+            state = self.client.get_subscription_status(subscription_id)
+            if state['status'] == 'DISABLED' and state['service_state'] == 'UNDEPLOYED':
+                break
+            time.sleep(15)
+
+        if state['status'] != 'DISABLED' or state['service_state'] != 'UNDEPLOYED':
+            raise F5ModuleError('cannot suspend subscription: ' + state['status'])
+
+        self.have = ApiParameters(params=state)
+        self._update_changed_options()
+        return True
+
+    def deep_changes_check(self, want, have, keys_check=False):
+        if not want or not have:
+            return want != have
+
+        changed = False
+        if isinstance(want, dict) and isinstance(have, dict):
+            if keys_check is True and want.keys() != have.keys():
+                return True
+            for key in want.keys():
+                w_value = want.get(key, None)
+                h_value = have.get(key, None)
+                if h_value is None:
+                    changed = True
+                    break
+                if isinstance(w_value, dict):
+                    changed = self.deep_changes_check(w_value, h_value)
+                else:
+                    changed = w_value != h_value
+
+                if changed is True:
+                    break
+        else:
+            changed = want != have
+        return changed
+
+    def update_current(self):
+        changed = False
         payload = {
             'account_id': self.have.account_id,
             'catalog_id': self.have.catalog_id,
-            'service_instance_name': self.have.service_instance_name,
             'service_type': 'waf',
-            'configuration': self.changes.configuration,
         }
 
         if self.want.configuration and self.want.patch is False:
             payload['configuration'] = self.want.configuration
+            payload['service_instance_name'] = self.want.service_instance_name
+
+            h_config = copy.deepcopy(self.have.configuration)
+            if h_config.get('details', None):
+                del h_config['details']
+
+            changed = self.deep_changes_check(self.want.configuration, h_config, True)
+            changed = changed or self.want.service_instance_name == self.have.service_instance_name
         else:
-            if self.changes.configuration.get('details'):
-                del self.changes.configuration['details']
-            payload['configuration'] = self.changes.configuration
+            payload['configuration'] = copy.deepcopy(self.changes.configuration)
+            if payload['configuration'].get('details', None):
+                del payload['configuration']['details']
+            payload['service_instance_name'] = self.want.service_instance_name or self.have.service_instance_name
+            if self.want.configuration:
+                changed = self.deep_changes_check(self.want.configuration, self.have.configuration, False)
+                changed = changed or payload['service_instance_name'] != self.have.service_instance_name
 
-        payload['configuration']['update_comment'] = self.want.update_comment
+        if changed is True:
+            payload['configuration']['update_comment'] = self.want.update_comment
+            self.update_on_cloud(payload, subscription_id=self.have.subscription_id)
+        return changed
 
-        self.update_on_cloud(payload, subscription_id=self.want.subscription_id)
-        return True
+    def get_subscriptions(self):
+        account_id = self.get_account_id()
+        response = self.client.get_subscriptions_by_type(subscription_type='waf', account_id=account_id)
+        return response.get('subscriptions', [])
+
+    def read_subscriptions_from_cloud(self):
+        subscriptions = self.get_subscriptions()
+        self.have = ApiParameters(params=dict(apps=subscriptions))
+        self._update_changed_options()
 
     def read_from_cloud(self, subscription_id):
         subscription = self.client.get_subscription_by_id(subscription_id)
@@ -498,15 +661,21 @@ class ArgumentSpec(object):
             subscription_id=dict(),
             account_id=dict(),
             catalog_id=dict(),
+            fqdn=dict(),
             service_instance_name=dict(),
             configuration=dict(type=dict),
+            waf_regions=dict(type=dict),
             state=dict(
                 default='present',
-                choices=['present', 'absent', 'fetch']
+                choices=['present', 'absent', 'fetch', 'active', 'suspended']
             ),
             update_comment=dict(default='update EAP application'),
             patch=dict(
                 default=False,
+                type='bool',
+            ),
+            wait_status_change=dict(
+                default=True,
                 type='bool',
             ),
             activate=dict(

@@ -1,0 +1,16 @@
+{
+    "certificates": [
+        {
+            "id": "cert-xxxxxxxxxx",
+            "common_name": "fqdn.test.com",
+            "account_id": "",
+            "expiration_date": "2030-02-14T19:46:40Z"
+        },
+        {
+            "id": "cert-yyyyyyyyyyy",
+            "common_name": "*.test.com",
+            "account_id": "",
+            "expiration_date": "2030-02-17T14:02:47Z"
+        }
+    ]
+}

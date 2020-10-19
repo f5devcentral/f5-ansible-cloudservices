@@ -186,6 +186,7 @@ LOGIN_URL = "/v1/svc-auth/login"
 LOGOUT_URL = "/v1/svc-auth/logout"
 RELOG_URL = "/v1/svc-auth/relogin"
 SUBSCRIPTION_BY_ID_URL = "/v1/svc-subscription/subscriptions/{0}"
+SUBSCRIPTIONS_BY_TYPE = "/v1/svc-subscription/subscriptions?service_type={0}&account_id={1}"
 SUBSCRIPTION_URL = "/v1/svc-subscription/subscriptions"
 SUBSCRIPTION_STATUS_URL = "/v1/svc-subscription/subscriptions/{0}/status"
 ACTIVATE_SUBSCRIPTION_URL = "/v1/svc-subscription/subscriptions/{0}/activate"
@@ -193,7 +194,24 @@ SUSPEND_SUBSCRIPTION_URL = "/v1/svc-subscription/subscriptions/{0}/suspend"
 RETIRE_SUBSCRIPTION_URL = "/v1/svc-subscription/subscriptions/{0}/retire"
 GET_CURRENT_USER = "/v1/svc-account/user"
 GET_CATALOGS = "/v1/svc-catalog/catalogs"
+GET_ACCOUNT_CATALOGS = "/v1/svc-account/accounts/{0}/catalogs"
+POST_CATALOGS = "/v1/svc-account/accounts/{0}/catalogs"
+DELETE_CATALOGS = "/v1/svc-account/accounts/{0}/catalogs/{1}"
 CERTIFICATES_URL = "/v1/svc-certificates/certificates"
+GET_CERTIFICATES_URL = "/v1/svc-certificates/certificates/{0}"
+DELETE_CERTIFICATES_URL = "/v1/svc-certificates/{0}"
+BATCH_GET_ACCOUNTS = "/v1/svc-account/accounts/batch-get"
+CREATE_ACCOUNT = "/v1/svc-account/accounts"
+UPDATE_ACCOUNT = "/v1/svc-account/accounts/{0}"
+DELETE_ACCOUNT = "/v1/svc-account/accounts/{0}"
+DELETE_ACCOUNT_MEMBER = "/v1/svc-account/accounts/{0}/members/{0}"
+DELETE_INVITE = "/v1/svc-account/invites/{0}"
+GET_ACCOUNT = "/v1/svc-account/accounts/{0}"
+GET_MEMBERSHIPS = "/v1/svc-account/users/{0}/memberships"
+GET_ACCOUNT_MEMBERS = "/v1/svc-account/accounts/{0}/members"
+GET_INVITES = "/v1/svc-account/invites"
+UPDATE_ACCOUNT_MEMBER = "v1/svc-account/accounts/{0}/members/{0}"
+CREATE_INVITE_INTO_ACCOUNT = "/v1/svc-account/invites"
 
 
 class CloudservicesApi():
@@ -215,6 +233,14 @@ class CloudservicesApi():
             return response['contents']
         else:
             raise AnsibleConnectionFailure('Subscription Id is required.')
+
+    def get_subscriptions_by_type(self, subscription_type, account_id):
+        if subscription_type:
+            response = self.connection.get(url=SUBSCRIPTIONS_BY_TYPE.format(subscription_type, account_id), account_id=self.account_id)
+            self.handle_httperror(response)
+            return response['contents']
+        else:
+            raise AnsibleConnectionFailure('Subscription Type is required.')
 
     def create_subscription(self, payload):
         if payload:
@@ -262,8 +288,90 @@ class CloudservicesApi():
         self.handle_httperror(response)
         return response['contents']
 
+    def enable_catalog_item(self, payload, account_id):
+        response = self.connection.post(url=POST_CATALOGS.format(account_id), data=payload, account_id=self.account_id)
+        self.handle_httperror(response)
+        return response['contents']
+
+    def disable_catalog_item(self, account_id, catalog_id):
+        response = self.connection.delete(url=DELETE_CATALOGS.format(account_id, catalog_id), account_id=account_id)
+        self.handle_httperror(response)
+        return response['contents']
+
     def post_certificate(self, payload):
         response = self.connection.post(url=CERTIFICATES_URL, data=payload, account_id=self.account_id)
         self.handle_httperror(response)
         return response['contents']
 
+    def get_certificates(self, account_id):
+        response = self.connection.get(url=GET_CERTIFICATES_URL.format(account_id), account_id=self.account_id)
+        self.handle_httperror(response)
+        return response['contents']
+
+    def retire_certificate(self, certificate_id):
+        response = self.connection.delete(url=DELETE_CERTIFICATES_URL.format(certificate_id), account_id=self.account_id)
+        self.handle_httperror(response)
+        return response['contents']
+
+    def batch_get_accounts(self, payload):
+        response = self.connection.post(url=BATCH_GET_ACCOUNTS, data=payload, account_id=self.account_id)
+        self.handle_httperror(response)
+        return response['contents']
+
+    def update_account(self, payload, account_id):
+        if payload:
+            response = self.connection.put(url=UPDATE_ACCOUNT.format(account_id), data=payload, account_id=self.account_id)
+            self.handle_httperror(response)
+            return response['contents']
+        else:
+            raise AnsibleConnectionFailure('Payload is empty.')
+
+    def get_memberships(self, user_id):
+        response = self.connection.get(url=GET_MEMBERSHIPS.format(user_id), account_id=self.account_id)
+        self.handle_httperror(response)
+        return response['contents']
+
+    def get_account(self, account_id):
+        response = self.connection.get(url=GET_ACCOUNT.format(account_id), account_id=self.account_id)
+        self.handle_httperror(response)
+        return response['contents']
+
+    def create_account(self, payload):
+        response = self.connection.post(url=CREATE_ACCOUNT, data=payload, account_id=self.account_id)
+        self.handle_httperror(response)
+        return response['contents']
+
+    def delete_account(self, payload, account_id):
+        response = self.connection.delete(url=DELETE_ACCOUNT.format(account_id), data=payload, account_id=self.account_id)
+        self.handle_httperror(response)
+        return response['contents']
+
+    def delete_account_member(self, account_id, user_id):
+        response = self.connection.delete(url=DELETE_ACCOUNT_MEMBER.format(account_id, user_id), account_id=account_id)
+        self.handle_httperror(response)
+        return response['contents']
+
+    def delete_invite(self, invite_id):
+        response = self.connection.delete(url=DELETE_INVITE.format(invite_id), account_id=self.account_id)
+        self.handle_httperror(response)
+        return response['contents']
+
+    def list_account_members(self, account_id):
+        response = self.connection.get(url=GET_ACCOUNT_MEMBERS.format(account_id), account_id=account_id)
+        self.handle_httperror(response)
+        return response['contents']
+
+    def list_invites(self):
+        response = self.connection.get(url=GET_INVITES, account_id=self.account_id)
+        self.handle_httperror(response)
+        return response['contents']
+
+    def update_account_member(self, payload, account_id, user_id):
+        response = self.connection.put(url=UPDATE_ACCOUNT_MEMBER.format(account_id, user_id), data=payload, account_id=account_id)
+        self.handle_httperror(response)
+        return response['contents']
+
+    def create_invite_into_account(self, payload):
+        response = self.connection.post(url=CREATE_INVITE_INTO_ACCOUNT, data=payload, account_id=self.account_id)
+        self.handle_httperror(response)
+        return response['contents']

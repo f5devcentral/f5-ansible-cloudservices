@@ -11,26 +11,72 @@
     ansible_user: "user@example.com"
     ansible_httpapi_password: "password"
     ansible_httpapi_use_ssl: yes
+    fqdn: "fqdn.demo.net"
+    instance_ip: "127.0.0.1"
+    subscription_id: "s-xxxxxxxx"
 
   tasks:
+    - name: Read All EAP apps
+      f5_cs_eap_subscription_app:
+        state: "fetch"
+
     - name: Create EAP instance
       f5_cs_eap_subscription_app:
-        service_instance_name: "fqdn.demo.net"
+        service_instance_name: "{{ fqdn }}"
+
+    - name: Create EAP instance
+      f5_cs_eap_subscription_app:
+        service_instance_name: "my_app"
+        fqdn: "{{ fqdn }}"
+
+    - name: create eap for selected region
+      f5_cs_eap_subscription_app:
+        waf_regions:
+          aws:
+            - name: "eu-west-3"
+              value:
+                endpoint:
+                  http:
+                    enabled: true
+                    port: 80
+                  ips:
+                    - "{{ instance_ip }}"
+        service_instance_name: "{{ fqdn }}"
 
     - name: Fetch EAP instance
       f5_cs_eap_subscription_app:
-        subscription_id: "s-xxxxxxxxxx"
+        subscription_id: "{{ subscription_id }}"
         state: "fetch"
-
-    - name: Retire EAP instance
-      f5_cs_eap_subscription_app:
-        subscription_id: "s-xxxxxxxxxx"
-        state: "absent"
 
     - name: Partial EAP instance update
       f5_cs_eap_subscription_app:
-        subscription_id: "s-xxxxxxxxxx"
+        subscription_id: "{{ subscription_id }}"
+        wait_status_change: false
         patch: true
+        configuration:
+          update_comment: "update EAP subscription"
+          waf_service:
+            policy:
+              compliance_enforcement:
+                enabled: true
+                data_guard:
+                  enabled: true
+
+    - name: Partial EAP instance update with waf regions
+      f5_cs_eap_subscription_app:
+        subscription_id: "{{ subscription_id }}"
+        patch: true
+        wait_status_change: false
+        waf_regions:
+          aws:
+            - name: "us-west-1"
+              value:
+                endpoint:
+                  http:
+                    enabled: true
+                    port: 80
+                  ips:
+                    - "{{ instance_ip }}"
         configuration:
           update_comment: "update EAP subscription"
           waf_service:
@@ -42,14 +88,14 @@
 
     - name: Full EAP instance update
       f5_cs_eap_subscription_app:
-        subscription_id: "s-xxxxxxxxxx"
-        service_instance_name: "fqdn.demo.net"
+        subscription_id: "{{ subscription_id }}"
+        service_instance_name: "{{ fqdn }}"
         configuration:
           update_comment: "update EAP subscription"
           waf_service:
             application:
               description: "eap subscription"
-              fqdn: "fqdn.demo.net"
+              fqdn: "{{ fqdn }}"
               http:
                 enabled: true
                 port: 80
@@ -66,7 +112,7 @@
                         enabled: true
                         port: 80
                       ips:
-                        - "127.0.0.1"
+                        - "{{ instance_ip }}"
             policy:
               encoding: "utf-8"
               compliance_enforcement:
@@ -112,3 +158,18 @@
                 enabled: true
                 enforcement_mode: "monitoring"
                 campaigns: []
+
+    - name: Suspend EAP instance
+      f5_cs_eap_subscription_app:
+        subscription_id: "{{ subscription_id }}"
+        state: "suspended"
+
+    - name: Activate EAP instance
+      f5_cs_eap_subscription_app:
+        subscription_id: "{{ subscription_id }}"
+        state: "active"
+
+    - name: Remove EAP instance
+      f5_cs_eap_subscription_app:
+        subscription_id: "{{ subscription_id }}"
+        state: "absent"

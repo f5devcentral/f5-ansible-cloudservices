@@ -1,4 +1,4 @@
-- name: Fetch CNAME
+- name: Manage Enforcement Mode
   hosts: webservers
   gather_facts: false
   collections:
@@ -14,6 +14,15 @@
     subscription_id: "s-xxxxxxxxxx"
 
   tasks:
-    - name: Fetch CNAME value
-      f5_cs_eap_cname_fetch:
+    - name: Update EAP Protection mode
+      f5_cs_eap_protection_mode:
         subscription_id: "{{ subscription_id }}"
+        hi_risk_attack:
+          enabled: true
+          enforcement_mode: "monitoring"
+        threat_campaign:
+          enabled: true
+          enforcement_mode: "monitoring"
+        malicious_ip:
+          enabled: true
+          enforcement_mode: "monitoring"

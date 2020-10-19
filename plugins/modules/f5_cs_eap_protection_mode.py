@@ -4,11 +4,11 @@
 # GNU General Public License v3.0 (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.connection import Connection
-from functools import reduce
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
@@ -16,71 +16,49 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 
 DOCUMENTATION = r'''
 ---
-module: f5_cs_eap_ip_enforcement
-short_description: Update IP Enforcement Rules
+module: f5_cs_eap_protection_mode
+short_description: Update EAP Protection mode
 description: 
-    - This module will add, remove and update Essential App Protect IP Enforcement Rules list
+    - This module will manage protection settings for EAP Application
 version_added: 1.0
 options:
     subscription_id:
         description: ID of existing subscription
-    ip_enforcement:
-        - address:
-            description: IP address
-            required: True
-          description:
-            description: Rule description
-            default:             
-          action:
-            description: Block or Allow
-            default: block
-          log:
-            description: Log requests
-            default: False
     account_id:
         description:
             - ID of your main user’s primary account (where you will create instances)
-    append: 
-        description: Append provided IPs to the existing list
-        default: False
-    state:
-        description:
-            - When C(absent), will exclude provided IPs from the EAP application
-            - When C(present) will replace EAP application Rules list with provided
-        default: present
-        choices:
-            - present
-            - absent
+    hi_risk_attack:
+        enabled: true
+        enforcement_mode: blocking
+    malicious_ip:
+        enabled: true
+        enforcement_mode: blocking
+    threat_campaign
+        enabled: true
+        enforcement_mode: blocking
 author:
   - Alex Shemyakin
 '''
 
 EXAMPLES = '''
 description: 
-    - The examples can be found in /examples/f5_cs_eap_ip_enforcement.yml
+    - The examples can be found in /examples/f5_cs_eap_protection_mode.yml
 '''
 
 RETURN = r'''
 subscription_id
     description: ID of the changed EAP application
     sample: s-xxxxxxxxxx
-ip_enforcement:
-    - address:
-        description: IP address
-        required: True   
-        sample: 192.168.1.1
-      description:
-        description: Rule description
-        default:             
-        sample: dev ops
-      action:
-        description: Block or Allow
-        default: block
-        sample: allow
-      log:
-        description: Log requests
-        default: False
-        sample: false
+hi_risk_attack:
+    enabled: true
+    mode: blocking
+malicious_ip:
+    enabled: true
+    mode: blocking
+threat_campaign
+    enabled: true
+    mode: blocking
+
 '''
 
 try:
@@ -93,74 +71,76 @@ except ImportError:
     from ansible_collections.f5devcentral.cloudservices.plugins.module_utils.common import AnsibleF5Parameters
 
 
-def deep_get(dictionary, keys, default=None):
-    return reduce(lambda d, key: d.get(key, default) if isinstance(d, dict) else default, keys.split("."),
-                  dictionary)
-
-
-def deep_set(dictionary, keys, value):
-    current = dictionary
-    keys = keys.split(".")
-    counter = 1
-    for key in keys:
-        if counter == len(keys):
-            current[key] = value
-        else:
-            val = current.get(key, None)
-            if not isinstance(val, dict):
-                current[key] = dict()
-            current = current[key]
-            counter += 1
-
-
 class Parameters(AnsibleF5Parameters):
     updatables = [
-        'subscription_id', 'ip_enforcement', 'configuration'
+        'configuration', 'account_id', 'subscription_id', 'hi_risk_attack', 'threat_campaign', 'malicious_ip'
     ]
 
     returnables = [
-        'subscription_id', 'ip_enforcement'
+        'subscription_id', 'account_id', 'hi_risk_attack', 'threat_campaign', 'malicious_ip'
     ]
 
 
 class ApiParameters(Parameters):
     @property
-    def ip_enforcement(self):
-        return deep_get(self._values, 'configuration.waf_service.policy.high_risk_attack_mitigation.ip_enforcement.ips')
+    def hi_risk_attack(self):
+        return dict(
+            enabled=self._values['configuration']['waf_service']['policy']['high_risk_attack_mitigation']['enabled'],
+            enforcement_mode=self._values['configuration']['waf_service']['policy']['high_risk_attack_mitigation'][
+                'enforcement_mode']
+        )
+
+    @property
+    def threat_campaign(self):
+        return dict(
+            enabled=self._values['configuration']['waf_service']['policy']['threat_campaigns']['enabled'],
+            enforcement_mode=self._values['configuration']['waf_service']['policy']['threat_campaigns'][
+                'enforcement_mode']
+        )
+
+    @property
+    def malicious_ip(self):
+        return dict(
+            enabled=self._values['configuration']['waf_service']['policy']['malicious_ip_enforcement']['enabled'],
+            enforcement_mode=self._values['configuration']['waf_service']['policy']['malicious_ip_enforcement'][
+                'enforcement_mode']
+        )
 
     @property
     def configuration(self):
-        return deep_get(self._values, 'configuration')
-
-    @property
-    def account_id(self):
-        return deep_get(self._values, 'account_id')
-
-    @property
-    def catalog_id(self):
-        return deep_get(self._values, 'catalog_id')
-
-    @property
-    def service_instance_name(self):
-        return deep_get(self._values, 'service_instance_name')
+        if self._values['configuration'] is None:
+            return None
+        return self._values['configuration']
 
 
 class ModuleParameters(Parameters):
     @property
     def subscription_id(self):
-        return deep_get(self._values, 'subscription_id')
+        if self._values['subscription_id'] is None:
+            return None
+        return self._values['subscription_id']
 
     @property
-    def ip_enforcement(self):
-        return deep_get(self._values, 'ip_enforcement')
+    def hi_risk_attack(self):
+        return self._values['hi_risk_attack']
 
     @property
-    def state(self):
-        return deep_get(self._values, 'state')
+    def threat_campaign(self):
+        return self._values['threat_campaign']
+
+    @property
+    def malicious_ip(self):
+        return self._values['malicious_ip']
 
     @property
     def update_comment(self):
-        return deep_get(self._values, 'update_comment')
+        return self._values['update_comment']
+
+    @property
+    def configuration(self):
+        if self._values['configuration'] is None:
+            return None
+        return self._values['configuration']
 
 
 class Changes(Parameters):
@@ -174,11 +154,15 @@ class Changes(Parameters):
             pass
         return result
 
-
-class UsableChanges(Changes):
     @property
     def configuration(self):
-        return deep_get(self._values, 'configuration')
+        if self._values['configuration'] is None:
+            return None
+        return self._values['configuration']
+
+
+class UsableChanges(Changes):
+    pass
 
 
 class ReportableChanges(Changes):
@@ -209,22 +193,21 @@ class Difference(object):
     @property
     def configuration(self):
         config = self.have.configuration
-        w_ips = self.want.ip_enforcement
-        h_ips = self.have.ip_enforcement
-        ip_list = list()
-        if self.want.state == 'present' and self.want.append is False:
-            ip_list = list({ip['address']: ip for ip in w_ips}.values())
-        elif self.want.state == 'present' and self.want.append is True:
-            ips = h_ips + w_ips
-            ip_list = list({ip['address']: ip for ip in ips}.values())
-        elif self.want.state == 'absent':
-            unique_ips = {ip['address']: ip for ip in h_ips}
-            for ip in w_ips:
-                if ip['address'] in unique_ips:
-                    del unique_ips[ip['address']]
-            ip_list = list(unique_ips.values())
-
-        deep_set(config, 'waf_service.policy.high_risk_attack_mitigation.ip_enforcement.ips', ip_list)
+        if self.want.hi_risk_attack:
+            if self.want.hi_risk_attack['enabled'] is not None:
+                config['waf_service']['policy']['high_risk_attack_mitigation']['enabled'] = self.want.hi_risk_attack['enabled']
+            if self.want.hi_risk_attack['enforcement_mode']:
+                config['waf_service']['policy']['high_risk_attack_mitigation']['enforcement_mode'] = self.want.hi_risk_attack['enforcement_mode']
+        if self.want.threat_campaign:
+            if self.want.threat_campaign['enabled'] is not None:
+                config['waf_service']['policy']['threat_campaigns']['enabled'] = self.want.threat_campaign['enabled']
+            if self.want.threat_campaign['enforcement_mode']:
+                config['waf_service']['policy']['threat_campaigns']['enforcement_mode'] = self.want.threat_campaign['enforcement_mode']
+        if self.want.malicious_ip:
+            if self.want.malicious_ip['enabled'] is not None:
+                config['waf_service']['policy']['malicious_ip_enforcement']['enabled'] = self.want.malicious_ip['enabled']
+            if self.want.malicious_ip['enforcement_mode']:
+                config['waf_service']['policy']['malicious_ip_enforcement']['enforcement_mode'] = self.want.malicious_ip['enforcement_mode']
         return config
 
     @property
@@ -232,8 +215,20 @@ class Difference(object):
         return self.have.subscription_id
 
     @property
-    def ip_enforcement(self):
-        return self.have.ip_enforcement
+    def hi_risk_attack(self):
+        return self.have.hi_risk_attack
+
+    @property
+    def malicious_ip(self):
+        return self.have.malicious_ip
+
+    @property
+    def threat_campaign(self):
+        return self.have.threat_campaign
+
+    @property
+    def account_id(self):
+        return self.have.account_id
 
 
 class ModuleManager(object):
@@ -311,31 +306,24 @@ class ArgumentSpec(object):
     def __init__(self):
         self.supports_check_mode = False
 
-        ip_enforcement_spec = {
-            'address': dict(
-                required=True,
-            ),
-            'description': dict(
-                default='',
-            ),
-            'action': dict(
-                default='block',
-            ),
-            'log': dict(
-                type='bool',
-                default=False
-            )
-        }
-
         argument_spec = dict(
             subscription_id=dict(required=True),
             update_comment=dict(default='Update IP Enforcement Rules'),
-            ip_enforcement=dict(type='list', elements='dict', options=ip_enforcement_spec),
-            append=dict(type='bool', default=False),
-            state=dict(
-                default='present',
-                choices=['present', 'absent']
+            hi_risk_attack=dict(
+                type=dict,
+                enabled=dict(type='bool', default=None),
+                enforcement_mode=dict(default=None)
             ),
+            threat_campaign=dict(
+                type=dict,
+                enabled=dict(type='bool', default=None),
+                enforcement_mode=dict(default=None)
+            ),
+            malicious_ip=dict(
+                type=dict,
+                enabled=dict(type='bool', default=None),
+                enforcement_mode=dict(default=None)
+            )
         )
 
         self.argument_spec = {}

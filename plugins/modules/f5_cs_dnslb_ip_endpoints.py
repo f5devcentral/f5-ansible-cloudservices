@@ -4,49 +4,60 @@
 # GNU General Public License v3.0 (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.connection import Connection
-from functools import reduce
+import uuid
 
 ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'status': ['preview'],
                     'supported_by': 'community'}
 
+
 DOCUMENTATION = r'''
 ---
-module: f5_cs_eap_ip_enforcement
-short_description: Update IP Enforcement Rules
+module: f5_cs_dnslb_ip_endpoints
+short_description: Update IP Endpoints list
 description: 
-    - This module will add, remove and update Essential App Protect IP Enforcement Rules list
+    - This module will add, remove and update DNSLB IP Endpoints list
 version_added: 1.0
 options:
     subscription_id:
         description: ID of existing subscription
-    ip_enforcement:
-        - address:
-            description: IP address
+    ip_endpoints:
+        - virtual_server_type:
+            description: Record type, can be vip-id or cloud
             required: True
-          description:
-            description: Rule description
-            default:             
-          action:
-            description: Block or Allow
-            default: block
-          log:
-            description: Log requests
-            default: False
+            default: cloud
+          name:
+            description: IP Endpoint name
+            default: guid        
+          display_name:
+            description: IP Endpoint display name
+            default: guid
+          port:
+            description: port of the clients app
+            default: 80
+          translation_address:
+            description: LTM translation address
+          vip_id:
+            description: BigIP VIP id
+          address:
+            description: IP address of the clients app
+          monitor:
+            description: health check monitor
+            default: none   
     account_id:
         description:
             - ID of your main user’s primary account (where you will create instances)
-    append: 
-        description: Append provided IPs to the existing list
-        default: False
+    append:
+        description: append IPs
     state:
         description:
-            - When C(absent), will exclude provided IPs from the EAP application
-            - When C(present) will replace EAP application Rules list with provided
+            - When C(absent), will remove provided IPs from the DNSLB application
+            - When C(present) will replace DNSLB ips list with provided
         default: present
         choices:
             - present
@@ -57,30 +68,36 @@ author:
 
 EXAMPLES = '''
 description: 
-    - The examples can be found in /examples/f5_cs_eap_ip_enforcement.yml
+    - The examples can be found in /examples/f5_cs_dnslb_ip_endpoints.yml
 '''
 
 RETURN = r'''
 subscription_id
-    description: ID of the changed EAP application
+    description: ID of the changed DNSLB application
     sample: s-xxxxxxxxxx
-ip_enforcement:
-    - address:
-        description: IP address
-        required: True   
-        sample: 192.168.1.1
-      description:
-        description: Rule description
-        default:             
-        sample: dev ops
-      action:
-        description: Block or Allow
-        default: block
-        sample: allow
-      log:
-        description: Log requests
-        default: False
-        sample: false
+ip_endpoints:
+    - virtual_server_type:
+        description: Record type, can be vip-id or cloud
+        required: True
+        default: cloud
+      name:
+        description: IP Endpoint name
+        default: guid        
+      display_name:
+        description: IP Endpoint display name
+        default: guid
+      port:
+        description: port of the clients app
+        default: 80
+      translation_address:
+        description: LTM translation address
+      vip_id:
+        description: BigIP VIP id
+      address:
+        description: IP address of the clients app
+      monitor:
+        description: health check monitor
+        default: none
 '''
 
 try:
@@ -93,74 +110,61 @@ except ImportError:
     from ansible_collections.f5devcentral.cloudservices.plugins.module_utils.common import AnsibleF5Parameters
 
 
-def deep_get(dictionary, keys, default=None):
-    return reduce(lambda d, key: d.get(key, default) if isinstance(d, dict) else default, keys.split("."),
-                  dictionary)
-
-
-def deep_set(dictionary, keys, value):
-    current = dictionary
-    keys = keys.split(".")
-    counter = 1
-    for key in keys:
-        if counter == len(keys):
-            current[key] = value
-        else:
-            val = current.get(key, None)
-            if not isinstance(val, dict):
-                current[key] = dict()
-            current = current[key]
-            counter += 1
-
-
 class Parameters(AnsibleF5Parameters):
     updatables = [
-        'subscription_id', 'ip_enforcement', 'configuration'
+        'subscription_id', 'ip_endpoints', 'configuration'
     ]
 
     returnables = [
-        'subscription_id', 'ip_enforcement'
+        'subscription_id', 'ip_endpoints'
     ]
 
 
 class ApiParameters(Parameters):
     @property
-    def ip_enforcement(self):
-        return deep_get(self._values, 'configuration.waf_service.policy.high_risk_attack_mitigation.ip_enforcement.ips')
+    def ip_endpoints(self):
+        try:
+            return self._values['configuration']['gslb_service']['virtual_servers']
+        except:
+            return dict()
 
     @property
     def configuration(self):
-        return deep_get(self._values, 'configuration')
+        if self._values['configuration'] is None:
+            return None
+        return self._values['configuration']
 
     @property
     def account_id(self):
-        return deep_get(self._values, 'account_id')
+        return self._values['account_id']
 
     @property
     def catalog_id(self):
-        return deep_get(self._values, 'catalog_id')
+        return self._values['catalog_id']
 
     @property
     def service_instance_name(self):
-        return deep_get(self._values, 'service_instance_name')
+        return self._values['service_instance_name']
 
 
 class ModuleParameters(Parameters):
     @property
     def subscription_id(self):
-        return deep_get(self._values, 'subscription_id')
+        if self._values['subscription_id'] is None:
+            return None
+        return self._values['subscription_id']
 
     @property
-    def ip_enforcement(self):
-        return deep_get(self._values, 'ip_enforcement')
+    def ip_endpoints(self):
+        return self._values['ip_endpoints']
 
     @property
     def state(self):
-        return deep_get(self._values, 'state')
+        return self._values['state']
 
     @property
-    def update_comment(self):
-        return deep_get(self._values, 'update_comment')
+    def append(self):
+        return self._values['append']
 
 
 class Changes(Parameters):
@@ -178,11 +182,19 @@ class Changes(Parameters):
 class UsableChanges(Changes):
     @property
     def configuration(self):
-        return deep_get(self._values, 'configuration')
+        if self._values['configuration'] is None:
+            return None
+        return self._values['configuration']
 
 
 class ReportableChanges(Changes):
-    pass
+    @property
+    def ip_endpoints(self):
+        ip_endpoints = list()
+        for key, value in self._values['ip_endpoints'].items():
+            value['name'] = key
+            ip_endpoints.append(value)
+        return ip_endpoints
 
 
 class Difference(object):
@@ -209,22 +221,32 @@ class Difference(object):
     @property
     def configuration(self):
         config = self.have.configuration
-        w_ips = self.want.ip_enforcement
-        h_ips = self.have.ip_enforcement
-        ip_list = list()
+        w_ips = self.want.ip_endpoints
+        h_ips = self.have.ip_endpoints
+        ip_list = dict()
         if self.want.state == 'present' and self.want.append is False:
-            ip_list = list({ip['address']: ip for ip in w_ips}.values())
-        elif self.want.state == 'present' and self.want.append is True:
-            ips = h_ips + w_ips
-            ip_list = list({ip['address']: ip for ip in ips}.values())
-        elif self.want.state == 'absent':
-            unique_ips = {ip['address']: ip for ip in h_ips}
             for ip in w_ips:
-                if ip['address'] in unique_ips:
-                    del unique_ips[ip['address']]
-            ip_list = list(unique_ips.values())
+                if not ip['name']:
+                    ip['name'] = 'ipEndpoint_{0}'.format(str(uuid.uuid1()).replace('-', '_'))
+                ip_list[ip['name']] = {k: v for k, v in iter(ip.items()) if v and k != 'name'}
+                if not ip_list[ip['name']]['display_name']:
+                    ip_list[ip['name']]['display_name'] = ip['name']
+        elif self.want.state == 'present' and self.want.append is True:
+            ip_list = h_ips
+            for ip in w_ips:
+                if not ip['name']:
+                    ip['name'] = 'ipEndpoint_{0}'.format(str(uuid.uuid1()).replace('-', '_'))
+                ip_list[ip['name']] = {k: v for k, v in iter(ip.items()) if v and k != 'name'}
+                if not ip_list[ip['name']]['display_name']:
+                    ip_list[ip['name']]['display_name'] = ip['name']
+        elif self.want.state == 'absent':
+            ip_list = h_ips
+            for ip in w_ips:
+                if ip['name'] in ip_list:
+                    del ip_list[ip['name']]
 
-        deep_set(config, 'waf_service.policy.high_risk_attack_mitigation.ip_enforcement.ips', ip_list)
+        config['gslb_service']['virtual_servers'] = ip_list
+
         return config
 
     @property
@@ -232,8 +254,8 @@ class Difference(object):
         return self.have.subscription_id
 
     @property
-    def ip_enforcement(self):
-        return self.have.ip_enforcement
+    def ip_endpoints(self):
+        return self.have.ip_endpoints
 
 
 class ModuleManager(object):
@@ -280,25 +302,28 @@ class ModuleManager(object):
             )
 
     def update_current(self):
-        self.read_from_cloud()
-
-        self.changes.configuration['update_comment'] = self.want.update_comment
-        if self.changes.configuration.get('details'):
-            del self.changes.configuration['details']
+        self.read_from_cloud(subscription_id=self.want.subscription_id)
 
         payload = {
+            'subscription_id': self.have.subscription_id,
             'account_id': self.have.account_id,
             'catalog_id': self.have.catalog_id,
             'service_instance_name': self.have.service_instance_name,
-            'service_type': 'waf',
             'configuration': self.changes.configuration,
         }
 
+        if self.changes.configuration.get('details'):
+            del self.changes.configuration['details']
+        if self.changes.configuration.get('nameservers'):
+            del self.changes.configuration['nameservers']
+        payload['configuration'] = self.changes.configuration
+
+        payload['configuration']['schemaVersion'] = '0.1'
         self.update_on_cloud(payload, subscription_id=self.want.subscription_id)
         return True
 
-    def read_from_cloud(self):
-        subscription = self.client.get_subscription_by_id(subscription_id=self.want.subscription_id)
+    def read_from_cloud(self, subscription_id):
+        subscription = self.client.get_subscription_by_id(subscription_id)
         self.have = ApiParameters(params=subscription)
         self._update_changed_options()
 
@@ -311,26 +336,41 @@ class ArgumentSpec(object):
     def __init__(self):
         self.supports_check_mode = False
 
-        ip_enforcement_spec = {
+        ip_endpoint_spec = {
+            'name': dict(
+                default=None,
+            ),
+            'display_name': dict(
+                default=None,
+            ),
+            'port': dict(
+                default=80,
+                type='int',
+            ),
+            'virtual_server_type': dict(
+                default='cloud',
+                choices=['cloud', 'bigip-ltm']
+            ),
             'address': dict(
-                required=True,
+                default=None,
             ),
-            'description': dict(
-                default='',
+            'vip_id': dict(
+                default=None,
             ),
-            'action': dict(
-                default='block',
+            'remark': dict(
+                default=None,
             ),
-            'log': dict(
-                type='bool',
-                default=False
+            'monitor': dict(
+                default='none',
+            ),
+            'translation_address': dict(
+                default=None,
             )
         }
 
         argument_spec = dict(
             subscription_id=dict(required=True),
-            update_comment=dict(default='Update IP Enforcement Rules'),
-            ip_enforcement=dict(type='list', elements='dict', options=ip_enforcement_spec),
+            ip_endpoints=dict(type='list', elements='dict', options=ip_endpoint_spec),
             append=dict(type='bool', default=False),
             state=dict(
                 default='present',

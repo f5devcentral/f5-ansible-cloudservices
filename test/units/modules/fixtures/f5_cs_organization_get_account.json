@@ -1,0 +1,35 @@
+{
+    "id": "a-xxxxxxxxxx",
+    "name": "firstaccount",
+    "parent_account_id": "",
+    "status": "active",
+    "level": "0",
+    "signup_provider": "standard",
+    "address": {
+        "street_1": "",
+        "street_2": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "postal_code": ""
+    },
+    "phone": "",
+    "compliant": true,
+    "catalog_items": [
+        {
+            "catalog_id": "c-aaxBJkfg8u",
+            "account_id": "a-xxxxxxxxxx",
+            "service_type": "adns",
+            "status": "SUBSCRIBED",
+            "billing_provider": "free",
+            "trial_end_time": "2020-10-17T23:59:59Z",
+            "contract_end_time": null,
+            "create_time": "2020-10-02T15:57:19.554904Z",
+            "update_time": "2020-10-02T15:57:20.388143Z",
+            "delete_time": null
+        }
+    ],
+    "create_time": "2019-08-19T15:59:33.858609Z",
+    "update_time": "2019-08-19T15:59:33.858609Z",
+    "delete_time": null
+}

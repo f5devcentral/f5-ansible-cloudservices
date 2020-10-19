@@ -1,0 +1,26 @@
+{
+    "account_id": "a-xxxxxxxxxx",
+    "account_name": "account_name",
+    "users": [
+        {
+            "account_id": "a-xxxxxxxxxx",
+            "user_id": "u-xxxxxxxxxx",
+            "role_id": "r-rTLKOYBmg",
+            "user": {
+                "id": "u-xxxxxxxxxx",
+                "email": "email@email.email",
+                "first_name": "User",
+                "last_name": "Last",
+                "phone": "",
+                "create_time": "2020-10-01T13:18:25.175015Z",
+                "update_time": "2020-10-05T12:29:00.533194Z"
+            },
+            "account_name": "account_name",
+            "role_name": "owner",
+            "level": "0",
+            "signup_provider": "standard",
+            "create_time": "2020-10-05T17:10:03.128419Z",
+            "update_time": "2020-10-05T17:10:03.128419Z"
+        }
+    ]
+}

@@ -9,9 +9,12 @@
     "deleted": false,
     "service_type": "waf",
     "configuration": {
+        "details": {
+            "CNAMEValue": "waf-xxxxxxxxxx.waf.prd.f5aas.com"
+        },
         "waf_service": {
             "application": {
-                "description": "fqdn.test.com",
+                "description": "",
                 "fqdn": "fqdn.test.com",
                 "http": {
                     "enabled": true,
@@ -22,7 +25,7 @@
                     "enabled": false,
                     "port": 8443,
                     "tls": {
-                        "certificate_id": ""
+                        "certificate_id": "cert-xxxxxxxxxx"
                     }
                 },
                 "waf_regions": {

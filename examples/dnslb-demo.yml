@@ -1,4 +1,4 @@
-- name: Configure EAP and apply Enforcement Rules
+- name: Configure DNSLB IP Endpoints
   hosts: webservers
   gather_facts: false
   collections:
