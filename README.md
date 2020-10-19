@@ -83,19 +83,19 @@ Ansible modules are documented within each the .py code of each module itself wi
         ansible_httpapi_use_ssl: yes
 
       tasks:
-		- name: Apply SSL Certificate 
-		  f5_cs_eap_certificate:
-			state: "present"
-			certificate: "{{ lookup('file', './cert/cert.crt') }}"
-			private_key: "{{ lookup('file', './cert/key.pem') }}"
-			certificate_chain: "{{ lookup('file', './cert/chain.cert') }}"
-			passphrase: "123456"
-			assigned_subscriptions:
-			  - subscription_id: "s-xxxxxxxxxx"
-				enabled: true
-				https_port: 443
-				https_redirect: true
-				update_comment: "update SSL certificate"
+        - name: Apply SSL Certificate 
+          f5_cs_eap_certificate:
+            state: "present"
+            certificate: "{{ lookup('file', './cert/cert.crt') }}"
+            private_key: "{{ lookup('file', './cert/key.pem') }}"
+            certificate_chain: "{{ lookup('file', './cert/chain.cert') }}"
+            passphrase: "123456"
+            assigned_subscriptions:
+              - subscription_id: "s-xxxxxxxxxx"
+                enabled: true
+                https_port: 443
+                https_redirect: true
+                update_comment: "update SSL certificate"
 ```
 
 Bugs, Issues
