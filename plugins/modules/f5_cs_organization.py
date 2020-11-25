@@ -172,6 +172,10 @@ class ModuleParameters(Parameters):
     def phone(self):
         return self._values['phone']
 
+    @property
+    def cascade(self):
+        return self._values['cascade']
+
 
 class Changes(Parameters):
     def to_return(self):
@@ -409,7 +413,7 @@ class ModuleManager(object):
         self._update_changed_options()
 
     def remove_from_cloud(self, payload, account_id):
-        response = self.client.delete_account(payload, account_id)
+        response = self.client.delete_account(payload, account_id, self.want.cascade)
         self.have = ApiParameters(params=response)
         self._update_changed_options()
 
@@ -435,6 +439,7 @@ class ArgumentSpec(object):
                 default='present',
                 choices=['present', 'absent', 'fetch']
             ),
+            cascade=dict(type='bool', default=False),
         )
 
         self.argument_spec = {}
