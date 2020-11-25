@@ -14,6 +14,6 @@ RUN pip install -r requirements.txt
 
 COPY . /var/workdir
 RUN ansible-galaxy collection build --force
-RUN ansible-galaxy collection install f5devcentral-cloudservices-1.0.2.tar.gz -f -p ./examples/collections/
+RUN ansible-galaxy collection install f5devcentral-cloudservices-1.0.3.tar.gz -f -p ./examples/collections/
 
 CMD ["bash", "run.sh"]

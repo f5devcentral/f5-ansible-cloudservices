@@ -203,14 +203,14 @@ DELETE_CERTIFICATES_URL = "/v1/svc-certificates/{0}"
 BATCH_GET_ACCOUNTS = "/v1/svc-account/accounts/batch-get"
 CREATE_ACCOUNT = "/v1/svc-account/accounts"
 UPDATE_ACCOUNT = "/v1/svc-account/accounts/{0}"
-DELETE_ACCOUNT = "/v1/svc-account/accounts/{0}"
-DELETE_ACCOUNT_MEMBER = "/v1/svc-account/accounts/{0}/members/{0}"
+DELETE_ACCOUNT = "/v1/svc-account/accounts/{0}?cascade={1}"
+DELETE_ACCOUNT_MEMBER = "/v1/svc-account/accounts/{0}/members/{1}"
 DELETE_INVITE = "/v1/svc-account/invites/{0}"
 GET_ACCOUNT = "/v1/svc-account/accounts/{0}"
 GET_MEMBERSHIPS = "/v1/svc-account/users/{0}/memberships"
 GET_ACCOUNT_MEMBERS = "/v1/svc-account/accounts/{0}/members"
 GET_INVITES = "/v1/svc-account/invites"
-UPDATE_ACCOUNT_MEMBER = "v1/svc-account/accounts/{0}/members/{0}"
+UPDATE_ACCOUNT_MEMBER = "/v1/svc-account/accounts/{0}/members/{1}"
 CREATE_INVITE_INTO_ACCOUNT = "/v1/svc-account/invites"
 
 
@@ -341,8 +341,8 @@ class CloudservicesApi():
         self.handle_httperror(response)
         return response['contents']
 
-    def delete_account(self, payload, account_id):
-        response = self.connection.delete(url=DELETE_ACCOUNT.format(account_id), data=payload, account_id=self.account_id)
+    def delete_account(self, payload, account_id, cascade):
+        response = self.connection.delete(url=DELETE_ACCOUNT.format(account_id, str(cascade).lower()), data=payload, account_id=self.account_id)
         self.handle_httperror(response)
         return response['contents']
 

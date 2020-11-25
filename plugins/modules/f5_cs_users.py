@@ -267,8 +267,8 @@ class ModuleManager(object):
         cloud_users = self.read_from_cloud()['users']
         user = None
         for c_user in cloud_users:
-            if (w_user.get('user_id', None) and w_user['user_id'] == c_user['user_id']) \
-                    or (w_user.get('email', None) and w_user['email'] == c_user['email']) \
+            if (w_user.get('user_id', None) and w_user['user_id'].lower() == c_user['user_id']) \
+                    or (w_user.get('email', None) and w_user['email'].lower() == c_user['email']) \
                     or (w_user.get('invite_id', None) and w_user['invite_id'] == c_user.get('invite_id', None)):
                 user = c_user
                 break
@@ -335,16 +335,7 @@ class ModuleManager(object):
             'account_id': account_id,
         }
 
-        for user in invites:
-            result['users'].append(dict(
-                invite_id=user['invite_id'],
-                first_name=user['first_name'],
-                last_name=user['last_name'],
-                email=user['invitee_email'],
-                status=user['status'],
-                role_id=user['role_id'],
-                role_name=self.get_role_name_by_id(user['role_id']),
-            ))
+        existing_users = {}
 
         for user in users:
             result['users'].append(dict(
@@ -355,6 +346,20 @@ class ModuleManager(object):
                 role_id=user['role_id'],
                 role_name=user['role_name'],
             ))
+            existing_users[user['user']['email']] = user['user_id']
+
+        for user in invites:
+            if existing_users.get(user['invitee_email'], False) is False \
+                    and user['status'] != 'accepted':
+                result['users'].append(dict(
+                    invite_id=user['invite_id'],
+                    first_name=user['first_name'],
+                    last_name=user['last_name'],
+                    email=user['invitee_email'],
+                    status=user['status'],
+                    role_id=user['role_id'],
+                    role_name=self.get_role_name_by_id(user['role_id']),
+                ))
 
         self.have = ApiParameters(params=result)
         self._update_changed_options()
