@@ -17,11 +17,11 @@
 
   tasks:
     - name: Fetch all Secondary DNS
-      f5_cs_dns:
+      f5_cs_secondary_dns:
         state: "fetch"
 
     - name: Create Secondary DNS
-      f5_cs_dns:
+      f5_cs_secondary_dns:
         state: "present"
         service_instance_name: "{{ zone }}"
         master_servers:
@@ -30,26 +30,26 @@
       register: test
 
     - name: Fetch Secondary DNS by subscription id
-      f5_cs_dns:
+      f5_cs_secondary_dns:
         state: "fetch"
         subscription_id: "{{ test.subscription_id }}"
 
     - name: Fetch Secondary DNS by zone name
-      f5_cs_dns:
+      f5_cs_secondary_dns:
         state: "fetch"
         service_instance_name: "{{ zone }}"
 
     - name: Activate Secondary DNS
-      f5_cs_dns:
+      f5_cs_secondary_dns:
         state: "active"
         subscription_id: "{{ test.subscription_id }}"
 
     - name: Suspend Secondary DNS
-      f5_cs_dns:
+      f5_cs_secondary_dns:
         state: "suspended"
         subscription_id: "{{ test.subscription_id }}"
 
     - name: Retire Secondary DNS
-      f5_cs_dns:
+      f5_cs_secondary_dns:
         state: "absent"
         subscription_id: "{{ test.subscription_id }}"
