@@ -16,7 +16,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 
 DOCUMENTATION = r'''
 ---
-module: f5_cs_dns
+module: f5_cs_secondary_dns
 short_description: Manage DNS Subscription
 description: 
     - This module will manage DNS for F5 CloudServices
@@ -54,7 +54,7 @@ author:
 
 EXAMPLES = '''
 description: 
-    - The examples can be found in /examples/f5_cs_dns.yml
+    - The examples can be found in /examples/f5_cs_secondary_dns.yml
 '''
 
 RETURN = r'''

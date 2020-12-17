@@ -60,7 +60,7 @@ class TestParameters(unittest.TestCase):
         args = dict(
             account_id='a-xxxxxxxxxx',
             catalog_id='c-xxxxxxxxxx',
-            service='dns',
+            service='secondary_dns',
             state='absent',
         )
 
@@ -68,7 +68,7 @@ class TestParameters(unittest.TestCase):
 
         assert p.account_id == 'a-xxxxxxxxxx'
         assert p.catalog_id == 'c-xxxxxxxxxx'
-        assert p.service == 'dns'
+        assert p.service == 'secondary_dns'
         assert p.state == 'absent'
 
 
@@ -161,4 +161,4 @@ class TestOrganizationOperate(unittest.TestCase):
         assert results['account_id'] == 'a-xxxxxxxxxx'
         assert results['catalog_id'] == 'c-aaxBJkfg8u'
         assert results['status'] == 'SUBSCRIBED'
-        assert results['service'] == 'dns'
+        assert results['service'] == 'secondary_dns'

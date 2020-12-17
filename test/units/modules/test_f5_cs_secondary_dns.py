@@ -22,14 +22,14 @@ from unittest.mock import Mock
 from test.units.modules.utils import set_module_args
 
 try:
-    from library.modules.f5_cs_dns import ModuleParameters
-    from library.modules.f5_cs_dns import ModuleManager
-    from library.modules.f5_cs_dns import ArgumentSpec
+    from library.modules.f5_cs_secondary_dns import ModuleParameters
+    from library.modules.f5_cs_secondary_dns import ModuleManager
+    from library.modules.f5_cs_secondary_dns import ArgumentSpec
     from library.module_utils.cloudservices import CloudservicesApi
 except ImportError:
-    from ansible_collections.f5devcentral.cloudservices.plugins.modules.f5_cs_dns import ModuleParameters
-    from ansible_collections.f5devcentral.cloudservices.plugins.modules.f5_cs_dns import ModuleManager
-    from ansible_collections.f5devcentral.cloudservices.plugins.modules.f5_cs_dns import ArgumentSpec
+    from ansible_collections.f5devcentral.cloudservices.plugins.modules.f5_cs_secondary_dns import ModuleParameters
+    from ansible_collections.f5devcentral.cloudservices.plugins.modules.f5_cs_secondary_dns import ModuleManager
+    from ansible_collections.f5devcentral.cloudservices.plugins.modules.f5_cs_secondary_dns import ArgumentSpec
     from ansible_collections.f5devcentral.cloudservices.plugins.module_utils.cloudservices import CloudservicesApi
 
 
@@ -89,7 +89,7 @@ class TestSubscriptionAppCreate(unittest.TestCase):
         self.spec = ArgumentSpec()
         get_catalogs_fake = load_fixture('f5_cs_subscription_app_get_catalogs.json')
         get_user_fake = load_fixture('f5_cs_subscription_app_get_user.json')
-        get_subscriptions_fake = load_fixture('f5_cs_dns_get_subscriptions.json')
+        get_subscriptions_fake = load_fixture('f5_cs_secondary_dns_get_subscriptions.json')
         connection = Mock()
         self.api_client = CloudservicesApi(connection)
         self.api_client.login = Mock()
@@ -105,7 +105,7 @@ class TestSubscriptionAppCreate(unittest.TestCase):
         assert payload['service_instance_name'] == 'fqdn.demo.com'
         assert payload['configuration']['adns_service']['zone'] == 'fqdn.demo.com'
         assert payload['configuration']['adns_service']['master_servers'] == ['12.34.56.78']
-        return load_fixture('f5_cs_dns_subscription_create.json')
+        return load_fixture('f5_cs_secondary_dns_subscription_create.json')
 
     def test_subscription_app_create(self, *args):
         set_module_args(dict(
@@ -173,7 +173,7 @@ class TestSubscriptionOperate(unittest.TestCase):
         self.spec = ArgumentSpec()
         get_catalogs_fake = load_fixture('f5_cs_subscription_app_get_catalogs.json')
         get_user_fake = load_fixture('f5_cs_subscription_app_get_user.json')
-        get_subscriptions_fake = load_fixture('f5_cs_dns_get_subscriptions.json')
+        get_subscriptions_fake = load_fixture('f5_cs_secondary_dns_get_subscriptions.json')
         suspend_subscription_fake = load_fixture('f5_cs_subscription_app_suspend.json')
 
         connection = Mock()

@@ -36,7 +36,7 @@ options:
         choices:
             - eap
             - dnslb
-            - dns
+            - secondary_dns
 
 author:
   - Alex Shemyakin
@@ -170,8 +170,8 @@ class ModuleParameters(Parameters):
             return self._values['catalog_id']
         if self._values['service']:
             mapping = {
-                'dns': 'c-aaxBJkfg8u',
-                'gslb': 'c-aaQnOrPjGu',
+                'secondary_dns': 'c-aaxBJkfg8u',
+                'dnslb': 'c-aaQnOrPjGu',
                 'eap': 'c-aa9N0jgHI4',
                 'beacon': 'c-aacHacMCM8',
             }
@@ -184,8 +184,8 @@ class ModuleParameters(Parameters):
             return self._values['service']
         if self._values['catalog_id']:
             mapping = {
-                'c-aaxBJkfg8u': 'dns',
-                'c-aaQnOrPjGu': 'gslb',
+                'c-aaxBJkfg8u': 'secondary_dns',
+                'c-aaQnOrPjGu': 'dnslb',
                 'c-aa9N0jgHI4': 'eap',
                 'c-aacHacMCM8': 'beacon',
             }
@@ -413,7 +413,7 @@ class ArgumentSpec(object):
             catalog_id=dict(),
             service=dict(
                 default=None,
-                choices=['dns', 'dnslb', 'eap']
+                choices=['secondary_dns', 'dnslb', 'eap']
             ),
             state=dict(
                 default='present',
