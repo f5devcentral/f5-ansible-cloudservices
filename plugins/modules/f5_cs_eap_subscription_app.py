@@ -538,7 +538,7 @@ class ModuleManager(object):
         state = self.client.activate_subscription(subscription_id)
 
         if not self.want.wait_status_change:
-            return
+            return True
 
         for retry in range(0, 100):
             state = self.client.get_subscription_status(subscription_id)
@@ -553,7 +553,7 @@ class ModuleManager(object):
         state = self.client.suspend_subscription(subscription_id)
 
         if not self.want.wait_status_change:
-            return
+            return True
 
         for retry in range(0, 100):
             state = self.client.get_subscription_status(subscription_id)

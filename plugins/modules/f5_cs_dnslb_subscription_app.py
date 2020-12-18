@@ -6,6 +6,7 @@
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 import time
+import copy
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.connection import Connection
@@ -18,7 +19,7 @@ DOCUMENTATION = r'''
 ---
 module: f5_cs_dnslb_subscription_app
 short_description: Manage DNS Load Balance Subscription
-description: 
+description:
     - This module will manage DNS Load Balance application for F5 CloudServices
 version_added: 1.0
 options:
@@ -28,13 +29,13 @@ options:
     service_instance_name:
         description:
             - FQDN record name or application name if FQDN was specified in the configuration property
-        required: True            
+        required: True
     account_id:
         description:
             - ID of your main user’s primary account (where you will create instances)
     state:
         description:
-            - When C(present), will create or update DNS LB subscription. 
+            - When C(present), will create or update DNS LB subscription.
             - When C(absent), will remove DNS LB subscription
             - When C(fetch) will return subscription configuration by subscription_id
         default: present
@@ -50,18 +51,18 @@ options:
         default: False
     configuration:
         update_comment:
-            description: 
+            description:
                 - Brief description of changes
             default: Update DNS LB application
         gslb_service:
-            description: 
-                - Describes DNS Load Balance service instance configuration. 
+            description:
+                - Describes DNS Load Balance service instance configuration.
 author:
   - Alex Shemyakin
 '''
 
 EXAMPLES = '''
-description: 
+description:
     - The examples can be found in /examples/f5_cs_dnslb_subscription_app.yml
 '''
 
@@ -147,6 +148,10 @@ class ModuleParameters(Parameters):
     @property
     def patch(self):
         return self._values['patch']
+
+    @property
+    def wait_status_change(self):
+        return self._values['wait_status_change']
 
     @property
     def activate(self):
@@ -292,11 +297,14 @@ class ModuleManager(object):
             else:
                 self.read_subscriptions_from_cloud()
         elif state == 'absent':
-            changed = self.retire()
+            if self.exists():
+                changed = self.retire()
         elif state == 'active':
-            changed = self.activate()
+            if self.exists():
+                changed = self.activate(self.have.subscription_id)
         elif state == 'suspended':
-            changed = self.suspend()
+            if self.exists():
+                changed = self.suspend(self.have.subscription_id)
 
         reportable = ReportableChanges(params=self.changes.to_return())
         changes = reportable.to_return()
@@ -315,10 +323,10 @@ class ModuleManager(object):
 
     def retire(self):
         payload = {
-            'subscription_id': self.want.subscription_id,
+            'subscription_id': self.have.subscription_id,
             'omit_config': True
         }
-        self.remove_from_cloud(payload, subscription_id=self.want.subscription_id)
+        self.remove_from_cloud(payload, subscription_id=self.have.subscription_id)
         return True
 
     def present(self):
@@ -328,10 +336,19 @@ class ModuleManager(object):
             return self.create()
 
     def exists(self):
+        subscriptions = self.get_subscriptions()
+        subscription = None
         if self.want.subscription_id:
-            return True
+            subscription = ([s for s in subscriptions if s['subscription_id'] == self.want.subscription_id] or [None])[
+                0]
         else:
-            return False
+            subscription = \
+            ([s for s in subscriptions if s['service_instance_name'] == self.want.service_instance_name] or [None])[0]
+        if subscription is not None:
+            self.have = ApiParameters(params=subscription)
+            self._update_changed_options()
+            return True
+        return False
 
     def get_catalog_id(self):
         if self.want.catalog_id:
@@ -359,64 +376,108 @@ class ModuleManager(object):
         }
         self.create_on_cloud(payload)
 
+        if self.want.activate:
+            self.activate(self.have.subscription_id)
+
         return True
 
-    def activate(self):
-        state = self.client.activate_subscription(subscription_id=self.want.subscription_id)
+    def activate(self, subscription_id):
+        state = self.client.activate_subscription(subscription_id)
+
+        if not self.want.wait_status_change:
+            return True
 
         for retry in range(0, 100):
-            state = self.client.get_subscription_status(subscription_id=self.want.subscription_id)
-            if state['status'] == 'ACTIVE':
+            state = self.client.get_subscription_status(subscription_id)
+            if state['status'] == 'ACTIVE' and state['service_state'] == 'DEPLOYED':
                 break
             time.sleep(15)
 
-        if state['status'] != 'ACTIVE':
+        if state['status'] != 'ACTIVE' or state['service_state'] != 'DEPLOYED':
             raise F5ModuleError('cannot activate subscription: ' + state.status)
-
-        self.have = ApiParameters(params=state)
-        self._update_changed_options()
         return True
 
-    def suspend(self):
-        state = self.client.suspend_subscription(subscription_id=self.want.subscription_id)
+    def suspend(self, subscription_id):
+        state = self.client.suspend_subscription(subscription_id)
+
+        if not self.want.wait_status_change:
+            return True
 
         for retry in range(0, 100):
-            state = self.client.get_subscription_status(subscription_id=self.want.subscription_id)
+            state = self.client.get_subscription_status(subscription_id)
             if state['status'] == 'DISABLED' and state['service_state'] == 'UNDEPLOYED':
                 break
             time.sleep(15)
 
         if state['status'] != 'DISABLED' or state['service_state'] != 'UNDEPLOYED':
-            raise F5ModuleError('cannot suspend subscription: ' + state.status)
+            raise F5ModuleError('cannot suspend subscription: ' + state['status'])
 
         self.have = ApiParameters(params=state)
         self._update_changed_options()
         return True
 
-    def update_current(self):
-        self.read_from_cloud(subscription_id=self.want.subscription_id)
+    def deep_changes_check(self, want, have, keys_check=False):
+        if not want or not have:
+            return want != have
 
+        changed = False
+        if isinstance(want, dict) and isinstance(have, dict):
+            if keys_check is True and want.keys() != have.keys():
+                return True
+            for key in want.keys():
+                w_value = want.get(key, None)
+                h_value = have.get(key, None)
+                if h_value is None:
+                    changed = True
+                    break
+                if isinstance(w_value, dict):
+                    changed = self.deep_changes_check(w_value, h_value)
+                else:
+                    changed = w_value != h_value
+
+                if changed is True:
+                    break
+        else:
+            changed = want != have
+        return changed
+
+    def update_current(self):
+        changed = False
         payload = {
             'account_id': self.have.account_id,
             'catalog_id': self.have.catalog_id,
-            'service_instance_name': self.have.service_instance_name,
             'service_type': 'gslb',
-            'configuration': self.changes.configuration,
         }
 
         if self.want.configuration and self.want.patch is False:
             payload['configuration'] = self.want.configuration
+            payload['service_instance_name'] = self.want.service_instance_name
+
+            h_config = copy.deepcopy(self.have.configuration)
+            if h_config.get('details', None):
+                del h_config['details']
+            if h_config.get('nameservers', None):
+                del h_config['nameservers']
+
+            changed = self.deep_changes_check(self.want.configuration, h_config, True)
+            changed = changed or self.want.service_instance_name == self.have.service_instance_name
         else:
-            if self.changes.configuration.get('details'):
-                del self.changes.configuration['details']
-            if self.changes.configuration.get('nameservers'):
-                del self.changes.configuration['nameservers']
-            payload['configuration'] = self.changes.configuration
+            payload['configuration'] = copy.deepcopy(self.changes.configuration)
+            if payload['configuration'].get('details', None):
+                del payload['configuration']['details']
+            if payload['configuration'].get('nameservers', None):
+                del payload['configuration']['nameservers']
+            payload['service_instance_name'] = self.want.service_instance_name or self.have.service_instance_name
+            if self.want.configuration:
+                changed = self.deep_changes_check(self.want.configuration, self.have.configuration, False)
+                changed = changed or payload['service_instance_name'] != self.have.service_instance_name
 
-        payload['configuration']['update_comment'] = self.want.update_comment
+        if changed is True:
+            payload['configuration']['update_comment'] = self.want.update_comment
+            self.update_on_cloud(payload, subscription_id=self.have.subscription_id)
+        return changed
 
-        self.update_on_cloud(payload, subscription_id=self.want.subscription_id)
-        return True
+
 
     def get_subscriptions(self):
         account_id = self.get_account_id()
@@ -463,6 +524,10 @@ class ArgumentSpec(object):
             update_comment=dict(default='update DNS LB configuration'),
             patch=dict(
                 default=False,
+                type='bool',
+            ),
+            wait_status_change=dict(
+                default=True,
                 type='bool',
             ),
             activate=dict(
