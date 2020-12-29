@@ -35,6 +35,7 @@ options:
         description: catalog service
         choices:
             - eap
+            - beacon
             - dnslb
             - secondary_dns
 
@@ -413,11 +414,11 @@ class ArgumentSpec(object):
             catalog_id=dict(),
             service=dict(
                 default=None,
-                choices=['secondary_dns', 'dnslb', 'eap']
+                choices=['secondary_dns', 'beacon', 'dnslb', 'eap']
             ),
             state=dict(
                 default='present',
-                choices=['present', 'absent', 'fetch']
+                choices=['present', 'beacon', 'absent', 'fetch']
             ),
         )
 
