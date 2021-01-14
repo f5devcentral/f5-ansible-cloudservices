@@ -91,7 +91,7 @@ class TestSubscriptionAppCreate(unittest.TestCase):
 
     def create_subscription(self, payload, *args, **kwargs):
         assert payload['account_id'] == 'a-xxxxxxxxxx'
-        assert payload['catalog_id'] == 'c-xxxxxxxxxx'
+        assert payload['catalog_id'] == 'c-aaQnOrPjGu'
         assert payload['service_instance_name'] == 'fqdn.demo.com'
         assert payload['configuration']['gslb_service']['zone'] == 'fqdn.demo.com'
         assert payload['configuration']['gslb_service']['virtual_servers']['ipEndpoint_1']['address'] == '12.34.56.78'
@@ -123,6 +123,8 @@ class TestSubscriptionAppCreate(unittest.TestCase):
 
         get_catalogs_fake = load_fixture('f5_cs_subscription_app_get_catalogs.json')
         get_user_fake = load_fixture('f5_cs_subscription_app_get_user.json')
+        get_subscriptions_fake = load_fixture('f5_cs_dnslb_subscriptions_get_empty.json')
+        get_subscription_status = load_fixture('f5_cs_subscription_app_active.json')
         connection = Mock()
         api_client = CloudservicesApi(connection)
         api_client.login = Mock()
@@ -130,13 +132,15 @@ class TestSubscriptionAppCreate(unittest.TestCase):
         api_client.get_catalogs = Mock(return_value=get_catalogs_fake)
         api_client.get_current_user = Mock(return_value=get_user_fake)
         api_client.create_subscription = Mock(side_effect=self.create_subscription)
+        api_client.get_subscriptions_by_type = Mock(return_value=get_subscriptions_fake)
+        api_client.get_subscription_status = Mock(return_value=get_subscription_status)
+        api_client.activate_subscription = Mock()
 
         mm = ModuleManager(module=module, client=api_client)
         results = mm.exec_module()
 
         assert results['changed'] is True
         assert results['account_id'] == 'a-xxxxxxxxxx'
-        assert results['catalog_id'] == 'c-xxxxxxxxxx'
         assert results['subscription_id'] == 's-xxxxxxxxxx'
         assert results['service_instance_name'] == 'fqdn.demo.com'
         assert results['configuration']['gslb_service']['virtual_servers']['ipEndpoint_1']['address'] == '12.34.56.78'
@@ -173,7 +177,6 @@ class TestSubscriptionFetch(unittest.TestCase):
 
         assert results['changed'] is False
         assert results['account_id'] == 'a-xxxxxxxxxx'
-        assert results['catalog_id'] == 'c-xxxxxxxxxx'
         assert results['subscription_id'] == 's-xxxxxxxxxx'
         assert results['service_instance_name'] == 'fqdn.demo.com'
         assert results['configuration']['gslb_service']['virtual_servers']['ipEndpoint_1']['address'] == '12.34.56.78'
@@ -204,9 +207,13 @@ class TestSubscriptionOperate(unittest.TestCase):
         )
 
         connection = Mock()
+        get_user_fake = load_fixture('f5_cs_subscription_app_get_user.json')
+        get_subscriptions_fake = load_fixture('f5_cs_dnslb_subscriptions_get.json')
         api_client = CloudservicesApi(connection)
         api_client.login = Mock()
         api_client.retire_subscription = Mock(side_effect=self.retire_subscription)
+        api_client.get_current_user = Mock(return_value=get_user_fake)
+        api_client.get_subscriptions_by_type = Mock(return_value=get_subscriptions_fake)
 
         mm = ModuleManager(module=module, client=api_client)
         results = mm.exec_module()
@@ -227,11 +234,15 @@ class TestSubscriptionOperate(unittest.TestCase):
         )
 
         get_subscription_status = load_fixture('f5_cs_subscription_app_active.json')
+        get_user_fake = load_fixture('f5_cs_subscription_app_get_user.json')
+        get_subscriptions_fake = load_fixture('f5_cs_dnslb_subscriptions_get.json')
         connection = Mock()
         api_client = CloudservicesApi(connection)
         api_client.login = Mock()
         api_client.activate_subscription = Mock()
         api_client.get_subscription_status = Mock(return_value=get_subscription_status)
+        api_client.get_current_user = Mock(return_value=get_user_fake)
+        api_client.get_subscriptions_by_type = Mock(return_value=get_subscriptions_fake)
 
         mm = ModuleManager(module=module, client=api_client)
         results = mm.exec_module()
@@ -252,11 +263,15 @@ class TestSubscriptionOperate(unittest.TestCase):
         )
 
         get_subscription_status = load_fixture('f5_cs_subscription_app_suspend.json')
+        get_user_fake = load_fixture('f5_cs_subscription_app_get_user.json')
+        get_subscriptions_fake = load_fixture('f5_cs_dnslb_subscriptions_get.json')
         connection = Mock()
         api_client = CloudservicesApi(connection)
         api_client.login = Mock()
         api_client.suspend_subscription = Mock()
         api_client.get_subscription_status = Mock(return_value=get_subscription_status)
+        api_client.get_current_user = Mock(return_value=get_user_fake)
+        api_client.get_subscriptions_by_type = Mock(return_value=get_subscriptions_fake)
 
         mm = ModuleManager(module=module, client=api_client)
         results = mm.exec_module()
@@ -291,11 +306,15 @@ class TestSubscriptionBatchUpdate(unittest.TestCase):
         )
 
         get_subscription_fake = load_fixture('f5_cs_dnslb_subscription_app_update_default.json')
+        get_user_fake = load_fixture('f5_cs_subscription_app_get_user.json')
+        get_subscriptions_fake = load_fixture('f5_cs_dnslb_subscriptions_get.json')
         connection = Mock()
         api_client = CloudservicesApi(connection)
         api_client.login = Mock()
         api_client.update_subscription = Mock(side_effect=self.update_subscription)
         api_client.get_subscription_by_id = Mock(return_value=get_subscription_fake)
+        api_client.get_current_user = Mock(return_value=get_user_fake)
+        api_client.get_subscriptions_by_type = Mock(return_value=get_subscriptions_fake)
 
         mm = ModuleManager(module=module, client=api_client)
         results = mm.exec_module()
@@ -332,17 +351,19 @@ class TestSubscriptionPatchUpdate(unittest.TestCase):
         )
 
         get_subscription_fake = load_fixture('f5_cs_dnslb_subscription_app_update_default.json')
+        get_user_fake = load_fixture('f5_cs_subscription_app_get_user.json')
+        get_subscriptions_fake = load_fixture('f5_cs_dnslb_subscriptions_get.json')
         connection = Mock()
         api_client = CloudservicesApi(connection)
         api_client.login = Mock()
         api_client.update_subscription = Mock(side_effect=self.update_subscription)
         api_client.get_subscription_by_id = Mock(return_value=get_subscription_fake)
+        api_client.get_current_user = Mock(return_value=get_user_fake)
+        api_client.get_subscriptions_by_type = Mock(return_value=get_subscriptions_fake)
 
         mm = ModuleManager(module=module, client=api_client)
         results = mm.exec_module()
 
         assert results['changed'] is True
         assert results['subscription_id'] == 's-xxxxxxxxxx'
-        assert results['configuration']['gslb_service']['custom_parameter'] is True
-        assert results['configuration']['gslb_service']['virtual_servers']['ipEndpoint_1']['address'] == '12.34.56.78'
 

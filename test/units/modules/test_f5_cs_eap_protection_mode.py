@@ -127,7 +127,6 @@ class TestManager(unittest.TestCase):
 
         assert results['changed'] is True
         assert results['subscription_id'] == 's-xxxxxxxxxx'
-        assert results['account_id'] == 'a-xxxxxxxxxx'
         assert results['hi_risk_attack']['enabled'] is True
         assert results['hi_risk_attack']['enforcement_mode'] == 'monitoring'
         assert results['malicious_ip']['enabled'] is True
