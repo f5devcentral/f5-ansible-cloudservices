@@ -269,8 +269,8 @@ class ModuleManager(object):
         cloud_users = self.read_from_cloud()['users']
         user = None
         for c_user in cloud_users:
-            if (w_user.get('user_id', None) and w_user['user_id'].lower() == c_user['user_id']) \
-                    or (w_user.get('email', None) and w_user['email'].lower() == c_user['email']) \
+            if (w_user.get('user_id', None) and w_user['user_id'] == c_user.get('user_id', None)) \
+                    or (w_user.get('email', None) and w_user['email'].lower() == c_user.get('email', None)) \
                     or (w_user.get('invite_id', None) and w_user['invite_id'] == c_user.get('invite_id', None)):
                 user = c_user
                 break
