@@ -17,28 +17,25 @@ DOCUMENTATION = r'''
 ---
 module: f5_cs_eap_cname_fetch
 short_description: Get CNAMEValue
-description: 
-    - This module will return CNAME record for Essential App Protect application 
+description: This module will return CNAME record for Essential App Protect application
 version_added: 1.0
 options:
     subscription_id:
-        description:
-            - ID of existing subscription
+        description: ID of existing subscription
 author:
-  - Alex Shemyakin
+    - Alex Shemyakin
 '''
 
 EXAMPLES = '''
-description: 
-    - The examples can be found in /examples/f5_cs_eap_cname_fetch.yml
+description: The examples can be found in /examples/f5_cs_eap_cname_fetch.yml
 '''
 
 RETURN = r'''
-subscription_id
+subscription_id:
     description: ID of the EAP application
     sample: s-xxxxxxxxxx
-CNAMEValue
-    description: CNAME record 
+CNAMEValue:
+    description: CNAME record
     sample: waf-xxxxxxxxx.waf.prd.f5aas.com
 '''
 

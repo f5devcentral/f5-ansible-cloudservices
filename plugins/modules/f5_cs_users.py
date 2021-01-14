@@ -17,8 +17,7 @@ DOCUMENTATION = r'''
 ---
 module: f5_cs_users
 short_description: Manage F5 CS Organization Users
-description: 
-    - This module will manage Users and Invites 
+description: This module will manage Users and Invites
 version_added: 1.0
 options:
     state:
@@ -33,31 +32,32 @@ options:
             - fetch
     users:
         description: list of users to create or update
-        user_id:
-            description: user id
-        invite_id:
-            description: invite id
-        email: 
-            description: user email
-        first_name: 
-            description: user first name
-        last_name: 
-            description: user last name
-        role_id:
-            description: role id
-        role_name: 
-            description: user role
-            choices:
-             - privileged-user
-             - limited-user
-             - owner
+        type: complex
+        contains:
+            user_id:
+                description: user id
+            invite_id:
+                description: invite id
+            email:
+                description: user email
+            first_name:
+                description: user first name
+            last_name:
+                description: user last name
+            role_id:
+                description: role id
+            role_name:
+                description: user role
+                choices:
+                 - privileged-user
+                 - limited-user
+                 - owner
 author:
   - Alex Shemyakin
 '''
 
 EXAMPLES = '''
-description: 
-    - The examples can be found in /examples/f5_cs_users.yml
+description: The examples can be found in /examples/f5_cs_users.yml
 '''
 
 RETURN = r'''
@@ -65,22 +65,24 @@ account_id:
     description: is of associated account
 users:
     description: list of users and invites
-    user_id:
-        description: user id
-    invite_id:
-        description: invite id
-    email: 
-        description: user email
-    first_name: 
-        description: user first name
-    last_name: 
-        description: user last name
-    role_id:
-        description: user role id
-    role_name: 
-        description: user role
-    status:
-        description: invite status
+    type: complex
+    contains:
+        user_id:
+            description: user id
+        invite_id:
+            description: invite id
+        email:
+            description: user email
+        first_name:
+            description: user first name
+        last_name:
+            description: user last name
+        role_id:
+            description: user role id
+        role_name:
+            description: user role
+        status:
+            description: invite status
 '''
 
 try:

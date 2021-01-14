@@ -17,8 +17,7 @@ DOCUMENTATION = r'''
 ---
 module: f5_cs_catalog_items
 short_description: Manage F5 CS Catalog Items
-description: 
-    - This module will manage Subscribed Services for F5 CloudServices
+description: This module will manage Subscribed Services for F5 CloudServices
 version_added: 1.0
 options:
     state:
@@ -44,8 +43,7 @@ author:
 '''
 
 EXAMPLES = '''
-description: 
-    - The examples can be found in /examples/f5_cs_catalog_items.yml
+description: The examples can be found in /examples/f5_cs_catalog_items.yml
 '''
 
 RETURN = r'''
@@ -72,7 +70,6 @@ delete_time:
 service:
     description: catalog service name
 '''
-
 
 try:
     from library.module_utils.cloudservices import CloudservicesApi

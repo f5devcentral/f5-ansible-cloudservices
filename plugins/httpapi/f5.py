@@ -6,6 +6,12 @@
 
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
+import re
+from ansible.module_utils.basic import to_text
+from ansible.errors import AnsibleConnectionFailure
+from ansible.module_utils.six.moves.urllib.error import HTTPError
+from ansible.plugins.httpapi import HttpApiBase
+from ansible.module_utils.connection import ConnectionError
 
 DOCUMENTATION = """
 ---
@@ -16,15 +22,6 @@ description:
   - This HttpApi plugin provides methods to connect to F5 Cloud Services over a HTTP(S)-based api.
 version_added: "2.10"
 """
-
-import re
-
-from ansible.module_utils.basic import to_text
-from ansible.errors import AnsibleConnectionFailure
-from ansible.module_utils.six.moves.urllib.error import HTTPError
-from ansible.plugins.httpapi import HttpApiBase
-from ansible.module_utils.connection import ConnectionError
-
 
 try:
     import json
@@ -47,9 +44,10 @@ class HttpApi(HttpApiBase):
 
     def login(self, username, password):
         if username and password:
-            payload = {
-                'username': username,
-                'password': password
+            payload = \
+                {
+                    'username': username,
+                    'password': password
                 }
             response = self.send_request(LOGIN_URL, method='POST', data=payload, headers=BASE_HEADERS)
         else:
@@ -137,7 +135,7 @@ class HttpApi(HttpApiBase):
             headers = {'X-F5aaS-Preferred-Account-Id': account_id}
             headers.update(BASE_HEADERS)
             return self.send_request(url, method='DELETE', headers=headers, **kwargs)
-        return self.send_request(url, method='DELETE', headers=BASE_HEADERS,  **kwargs)
+        return self.send_request(url, method='DELETE', headers=BASE_HEADERS, **kwargs)
 
     def get(self, url, account_id=None, **kwargs):
         if account_id:

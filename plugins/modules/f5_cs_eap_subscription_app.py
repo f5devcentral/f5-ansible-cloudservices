@@ -21,52 +21,49 @@ DOCUMENTATION = r'''
 ---
 module: f5_cs_eap_subscription_app
 short_description: Manage EAP Subscription
-description: 
-    - This module will manage Essential App Protect application for F5 CloudServices
+description: This module will manage Essential App Protect application for F5 CloudServices
 version_added: 1.0
 options:
     subscription_id:
-        description:
-            - ID of existing subscription
+        description: ID of existing subscription
     service_instance_name:
-        description:
-            - FQDN record name or application name if FQDN was specified in the configuration property
-        required: True            
+        description: FQDN record name or application name if FQDN was specified in the configuration property
+        required: True
     fqdn:
         description: FQDN record name
     account_id:
-        description:
-            - ID of your main user’s primary account (where you will create instances)
+        description: ID of your main user’s primary account (where you will create instances)
     state:
         description:
-            - When C(present), will create or update EAP subscription. 
             - When C(absent), will remove EAP subscription
-            - When C(fetch) will return subscription configuration by subscription_id
+            - When C(active), will activate EAP subscription
+            - When C(fetch), will return EAP subscription or all subscriptions for selected organization.
+            - When C(present), will create or update EAP subscription.
+            - When C(suspended), will suspend EAP subscription.
         default: present
         choices:
-            - present
             - absent
-            - fetch
             - active
+            - fetch
+            - present
             - suspended
     patch:
-        description:
-            - When C(True), will merge provided configuration property with existing cloud configuration
+        description:  When C(True), will merge provided configuration property with existing cloud configuration
         default: False
     activate:
-        description:
-            - When C(True), will activate subscription on create
+        description:  When C(True), will activate subscription on create
         default: True
     configuration:
-        update_comment:
-            description: 
-                - Brief description of changes
-            default: Update EAP application
-        waf_service:
-            description: 
-                - Describes Essential App Protect service instance configuration. 
+        description: detailed EAP configuration
+        type: complex
+        contains:
+            update_comment:
+                description: Brief description of changes
+                default: Update EAP application
+            waf_service:
+                description: Describes Essential App Protect service instance configuration.
     wait_status_change:
-        description: wait until the deployment will be completed 
+        description: wait until the deployment will be completed
     waf_regions:
          description: list of the regions, used for dynamic region variables
 author:
@@ -74,7 +71,7 @@ author:
 '''
 
 EXAMPLES = '''
-description: 
+description:
     - The examples can be found in /examples/f5_cs_eap_subscription_app.yml
 '''
 
@@ -90,7 +87,6 @@ service_instance_name:
     sample: fqdn.demo.net
 configuration:
     description: The EAP application configuration from the cloud
-    returned: changed
     type: complex
     contains:
         waf_service:
@@ -122,7 +118,7 @@ class Parameters(AnsibleF5Parameters):
     ]
 
     returnables = [
-        'configuration', 'account_id', 'catalog_id', 'subscription_id', 'service_instance_name', 'state', 'apps'
+        'configuration', 'account_id', 'subscription_id', 'service_instance_name', 'state', 'apps'
     ]
 
     @property
@@ -159,7 +155,8 @@ class ModuleParameters(Parameters):
             result['waf_service']['application']['waf_regions'] = waf_regions
 
         if result is None and self.waf_regions:
-            result = {
+            result = \
+                {
                     'waf_service': {
                         'application': {
                             'waf_regions': waf_regions,
@@ -409,7 +406,7 @@ class ModuleManager(object):
                 0]
         else:
             subscription = \
-            ([s for s in subscriptions if s['service_instance_name'] == self.want.service_instance_name] or [None])[0]
+                ([s for s in subscriptions if s['service_instance_name'] == self.want.service_instance_name] or [None])[0]
         if subscription is not None:
             self.have = ApiParameters(params=subscription)
             self._update_changed_options()
@@ -417,11 +414,7 @@ class ModuleManager(object):
         return False
 
     def get_catalog_id(self):
-        if self.want.catalog_id:
-            return self.want.catalog_id
-        catalogs = self.client.get_catalogs()
-        eap_catalog = next(c for c in catalogs['Catalogs'] if c['service_type'] == 'waf')
-        return eap_catalog['catalog_id']
+        return "c-aa9N0jgHI4"
 
     def get_account_id(self):
         if self.want.account_id:
@@ -597,7 +590,7 @@ class ModuleManager(object):
         changed = False
         payload = {
             'account_id': self.have.account_id,
-            'catalog_id': self.have.catalog_id,
+            'catalog_id': self.get_catalog_id(),
             'service_type': 'waf',
         }
 
@@ -660,7 +653,6 @@ class ArgumentSpec(object):
         argument_spec = dict(
             subscription_id=dict(),
             account_id=dict(),
-            catalog_id=dict(),
             fqdn=dict(),
             service_instance_name=dict(),
             configuration=dict(type=dict),

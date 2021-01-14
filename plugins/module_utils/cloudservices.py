@@ -6,6 +6,8 @@
 
 from __future__ import absolute_import, division, print_function
 __metaclass__ = type
+import re
+from ansible.errors import AnsibleConnectionFailure
 
 DOCUMENTATION = """
 ---
@@ -16,168 +18,162 @@ description:
 version_added: "1.0"
 """
 
-import re
-from ansible.errors import AnsibleConnectionFailure
 
 f5_cs_eap_default_policy = {
     "compliance_enforcement": {
-      "data_guard": {
-        "cc": True,
+        "data_guard": {
+            "cc": True,
+            "enabled": True,
+            "ssn": True
+        },
         "enabled": True,
-        "ssn": True
-      },
-      "enabled": True,
-      "sensitive_parameters": {
-        "enabled": True,
-        "parameters": [
-          "cc_id",
-          "creditcard",
-          "passwd",
-          "password"
-        ]
-      }
+        "sensitive_parameters": {
+            "enabled": True,
+            "parameters": [
+                "cc_id",
+                "creditcard",
+                "passwd",
+                "password"
+            ]
+        }
     },
     "encoding": "utf-8",
     "high_risk_attack_mitigation": {
-      "allowed_methods": {
+        "allowed_methods": {
+            "enabled": True,
+            "methods": [
+                {
+                    "name": "GET"
+                },
+                {
+                    "name": "POST"
+                },
+                {
+                    "name": "HEAD"
+                }
+            ]
+        },
+        "api_compliance_enforcement": {
+            "enabled": True
+        },
+        "disallowed_file_types": {
+            "enabled": True,
+            "file_types": [
+                "back",
+                "bat",
+                "bck",
+                "bin",
+                "cfg",
+                "cmd",
+                "com",
+                "config",
+                "dat",
+                "dll",
+                "eml",
+                "exe",
+                "exe1",
+                "exe_renamed",
+                "hta",
+                "htr",
+                "htw",
+                "ida",
+                "idc",
+                "idq",
+                "ini",
+                "old",
+                "sav",
+                "save"
+            ]
+        },
         "enabled": True,
-        "methods": [
-          {
-            "name": "GET"
-          },
-          {
-            "name": "POST"
-          },
-          {
-            "name": "HEAD"
-          }
-        ]
-      },
-      "api_compliance_enforcement": {
-        "enabled": True
-      },
-      "disallowed_file_types": {
-        "enabled": True,
-        "file_types": [
-          "back",
-          "bat",
-          "bck",
-          "bin",
-          "cfg",
-          "cmd",
-          "com",
-          "config",
-          "dat",
-          "dll",
-          "eml",
-          "exe",
-          "exe1",
-          "exe_renamed",
-          "hta",
-          "htr",
-          "htw",
-          "ida",
-          "idc",
-          "idq",
-          "ini",
-          "old",
-          "sav",
-          "save"
-        ]
-      },
-      "enabled": True,
-      "enforcement_mode": "monitoring",
-      "geolocation_enforcement": {
-        "disallowed_country_codes": [
-          "CU",
-          "IR",
-          "KP",
-          "LY",
-          "SD",
-          "SY"
-        ],
-        "enabled": True
-      },
-      "http_compliance_enforcement": {
-        "enabled": True
-      },
-      "ip_enforcement": {
-        "enabled": True,
-        "ips": [
-
-        ]
-      },
-      "signature_enforcement": {
-        "enabled": True
-      }
+        "enforcement_mode": "monitoring",
+        "geolocation_enforcement": {
+            "disallowed_country_codes": [
+                "CU",
+                "IR",
+                "KP",
+                "LY",
+                "SD",
+                "SY"
+            ],
+            "enabled": True
+        },
+        "http_compliance_enforcement": {
+            "enabled": True
+        },
+        "ip_enforcement": {
+            "enabled": True,
+            "ips": []
+        },
+        "signature_enforcement": {
+            "enabled": True
+        }
     },
     "malicious_ip_enforcement": {
-      "enabled": True,
-      "enforcement_mode": "monitoring",
-      "ip_categories": [
-        {
-          "block": True,
-          "log": True,
-          "name": "mobile_threats"
-        },
-        {
-          "block": True,
-          "log": True,
-          "name": "cloud_services"
-        },
-        {
-          "block": True,
-          "log": True,
-          "name": "anonymous_proxies"
-        },
-        {
-          "block": True,
-          "log": True,
-          "name": "phishing_proxies"
-        },
-        {
-          "block": True,
-          "log": True,
-          "name": "infected_sources"
-        },
-        {
-          "block": True,
-          "log": True,
-          "name": "denial_of_service"
-        },
-        {
-          "block": True,
-          "log": True,
-          "name": "scanners"
-        },
-        {
-          "block": True,
-          "log": True,
-          "name": "bot_nets"
-        },
-        {
-          "block": True,
-          "log": True,
-          "name": "web_attacks"
-        },
-        {
-          "block": True,
-          "log": True,
-          "name": "windows_exploits"
-        },
-        {
-          "block": True,
-          "log": True,
-          "name": "spam_sources"
-        }
-      ]
+        "enabled": True,
+        "enforcement_mode": "monitoring",
+        "ip_categories": [
+            {
+                "block": True,
+                "log": True,
+                "name": "mobile_threats"
+            },
+            {
+                "block": True,
+                "log": True,
+                "name": "cloud_services"
+            },
+            {
+                "block": True,
+                "log": True,
+                "name": "anonymous_proxies"
+            },
+            {
+                "block": True,
+                "log": True,
+                "name": "phishing_proxies"
+            },
+            {
+                "block": True,
+                "log": True,
+                "name": "infected_sources"
+            },
+            {
+                "block": True,
+                "log": True,
+                "name": "denial_of_service"
+            },
+            {
+                "block": True,
+                "log": True,
+                "name": "scanners"
+            },
+            {
+                "block": True,
+                "log": True,
+                "name": "bot_nets"
+            },
+            {
+                "block": True,
+                "log": True,
+                "name": "web_attacks"
+            },
+            {
+                "block": True,
+                "log": True,
+                "name": "windows_exploits"
+            },
+            {
+                "block": True,
+                "log": True,
+                "name": "spam_sources"
+            }
+        ]
     },
     "threat_campaigns": {
-      "campaigns": [
-
-      ],
-      "enabled": True,
-      "enforcement_mode": "monitoring"
+        "campaigns": [],
+        "enabled": True,
+        "enforcement_mode": "monitoring"
     }
 }
 
