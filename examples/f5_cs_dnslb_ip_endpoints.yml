@@ -33,7 +33,7 @@
         state: "present"
         subscription_id: "{{ subscription_id }}"
         ip_endpoints:
-          - name: "second-endpoint"
+          - name: "second_endpoint"
             display_name: "second-endpoint"
             virtual_server_type: "cloud"
             port: 80
@@ -45,7 +45,7 @@
         append: true
         subscription_id: "{{ subscription_id }}"
         ip_endpoints:
-          - name: "third-endpoint"
+          - name: "third_endpoint"
             display_name: "third-endpoint"
             virtual_server_type: "cloud"
             port: 80
@@ -57,4 +57,4 @@
         state: "absent"
         subscription_id: "{{ subscription_id }}"
         ip_endpoints:
-          - name: "third-endpoint"
+          - name: "third_endpoint"

@@ -22,6 +22,7 @@
     - name: Create DNS LB instance
       f5_cs_dnslb_subscription_app:
         service_instance_name: "fqdn.demo.net"
+        activate: false
         configuration:
           gslb_service:
             zone: "fqdn.demo.net"
@@ -61,8 +62,8 @@
           gslb_service:
             zone: "fqdn.demo.net"
             virtual_servers:
-              ipEndpoint_1":
-                address: "87.65.43.21",
+              ipEndpoint_1:
+                address: "87.65.43.21"
                 display_name: "endpoint_1"
                 monitor: "none"
                 port: 80
