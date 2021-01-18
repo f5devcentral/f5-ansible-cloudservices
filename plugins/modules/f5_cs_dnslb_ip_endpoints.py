@@ -20,40 +20,45 @@ DOCUMENTATION = r'''
 ---
 module: f5_cs_dnslb_ip_endpoints
 short_description: Update IP Endpoints list
-description: 
-    - This module will add, remove and update DNSLB IP Endpoints list
+description: This module will add, remove and update DNSLB IP Endpoints list
 version_added: 1.0
 options:
     subscription_id:
         description: ID of existing subscription
     ip_endpoints:
-        - virtual_server_type:
-            description: Record type, can be vip-id or cloud
-            required: True
-            default: cloud
-          name:
-            description: IP Endpoint name
-            default: guid        
-          display_name:
-            description: IP Endpoint display name
-            default: guid
-          port:
-            description: port of the clients app
-            default: 80
-          translation_address:
-            description: LTM translation address
-          vip_id:
-            description: BigIP VIP id
-          address:
-            description: IP address of the clients app
-          monitor:
-            description: health check monitor
-            default: none   
+        description: List of IP endpoints
+        type: complex
+        contains:
+            virtual_server_type:
+                description: Record type
+                required: True
+                default: cloud
+                choices:
+                    - vip-id
+                    - cloud
+            name:
+                description: IP Endpoint name
+                default: guid
+            display_name:
+                description: IP Endpoint display name
+                default: guid
+            port:
+                description: port of the clients app
+                default: 80
+            translation_address:
+                description: LTM translation address
+            vip_id:
+                description: BigIP VIP id
+            address:
+                description: IP address of the clients app
+            monitor:
+                description: health check monitor
+                default: none
     account_id:
-        description:
-            - ID of your main user’s primary account (where you will create instances)
+        description: ID of your main user’s primary account (where you will create instances)
     append:
         description: append IPs
+        default: False
     state:
         description:
             - When C(absent), will remove provided IPs from the DNSLB application
@@ -67,37 +72,42 @@ author:
 '''
 
 EXAMPLES = '''
-description: 
-    - The examples can be found in /examples/f5_cs_dnslb_ip_endpoints.yml
+description: The examples can be found in /examples/f5_cs_dnslb_ip_endpoints.yml
 '''
 
 RETURN = r'''
-subscription_id
+subscription_id:
     description: ID of the changed DNSLB application
     sample: s-xxxxxxxxxx
 ip_endpoints:
-    - virtual_server_type:
-        description: Record type, can be vip-id or cloud
-        required: True
-        default: cloud
-      name:
-        description: IP Endpoint name
-        default: guid        
-      display_name:
-        description: IP Endpoint display name
-        default: guid
-      port:
-        description: port of the clients app
-        default: 80
-      translation_address:
-        description: LTM translation address
-      vip_id:
-        description: BigIP VIP id
-      address:
-        description: IP address of the clients app
-      monitor:
-        description: health check monitor
-        default: none
+    description: List of IP endpoints
+    type: complex
+    contains:
+        virtual_server_type:
+            description: Record type, can be vip-id or cloud
+            required: True
+            default: cloud
+            choices:
+                - vip-id
+                - cloud
+        name:
+            description: IP Endpoint name
+            default: guid
+        display_name:
+            description: IP Endpoint display name
+            default: guid
+        port:
+            description: port of the clients app
+            default: 80
+        translation_address:
+            description: LTM translation address
+        vip_id:
+            description: BigIP VIP id
+        address:
+            description: IP address of the clients app
+        monitor:
+            description: health check monitor
+            default: none
 '''
 
 try:
@@ -125,7 +135,7 @@ class ApiParameters(Parameters):
     def ip_endpoints(self):
         try:
             return self._values['configuration']['gslb_service']['virtual_servers']
-        except:
+        except Exception:
             return dict()
 
     @property

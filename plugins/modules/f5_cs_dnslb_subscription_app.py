@@ -19,66 +19,68 @@ DOCUMENTATION = r'''
 ---
 module: f5_cs_dnslb_subscription_app
 short_description: Manage DNS Load Balance Subscription
-description:
-    - This module will manage DNS Load Balance application for F5 CloudServices
+description: This module will manage DNS Load Balance application for F5 CloudServices
 version_added: 1.0
 options:
     subscription_id:
-        description:
-            - ID of existing subscription
+        description: ID of existing subscription
     service_instance_name:
-        description:
-            - FQDN record name or application name if FQDN was specified in the configuration property
+        description:  FQDN record name or application name if FQDN was specified in the configuration property
         required: True
     account_id:
-        description:
-            - ID of your main user’s primary account (where you will create instances)
+        description: ID of your main user’s primary account (where you will create instances)
     state:
         description:
-            - When C(present), will create or update DNS LB subscription.
             - When C(absent), will remove DNS LB subscription
-            - When C(fetch) will return subscription configuration by subscription_id
+            - When C(active), will activate DNS LB subscription
+            - When C(fetch), will return DNS LB subscription
+            - When C(present), will create or update DNS LB subscription.
+            - When C(suspended), will suspend DNS LB subscription.
         default: present
         choices:
-            - present
             - absent
-            - fetch
             - active
+            - fetch
+            - present
             - suspended
     patch:
-        description:
-            - When C(True), will merge provided configuration property with existing cloud configuration
+        description: When C(True), will merge provided configuration property with existing cloud configuration
         default: False
     configuration:
-        update_comment:
-            description:
-                - Brief description of changes
-            default: Update DNS LB application
-        gslb_service:
-            description:
-                - Describes DNS Load Balance service instance configuration.
+        description: Detailed DNS LB application configuration
+        type: complex
+        contains:
+            update_comment:
+                description: Brief description of changes
+                default: Update DNS LB application
+            gslb_service:
+                description: Describes DNS Load Balance service instance configuration.
+    wait_status_change:
+        description: wait until subscription is activated
+        default: True
+    activate:
+        description: activate subscription on create
+        default: True
 author:
   - Alex Shemyakin
 '''
 
 EXAMPLES = '''
-description:
-    - The examples can be found in /examples/f5_cs_dnslb_subscription_app.yml
+description: The examples can be found in /examples/f5_cs_dnslb_subscription_app.yml
 '''
 
 RETURN = r'''
-subscription_id
+subscription_id:
     description: ID of the new or changed DNS LB application
     sample: s-xxxxxxxxxx
-account_id
+account_id:
     description: ID of the account with changes
     sample: a-xxxxxxxxxx
-service_instance_name
+service_instance_name:
     description: DNS LB application name or FQDN
     sample: fqdn.demo.net
-configuration
+configuration:
     description: The DNS LB application configuration from the cloud
-    returned: changed
     type: complex
     contains:
         gslb_service:
@@ -89,7 +91,8 @@ configuration
             sample: DNS LB Details
 apps:
     description: list of available DNSLB apps
-
+status:
+    description: subscription status
 '''
 
 try:
@@ -104,11 +107,11 @@ except ImportError:
 
 class Parameters(AnsibleF5Parameters):
     updatables = [
-        'configuration', 'account_id', 'catalog_id', 'subscription_id', 'service_instance_name', 'status', 'apps'
+        'configuration', 'account_id', 'subscription_id', 'service_instance_name', 'status', 'apps'
     ]
 
     returnables = [
-        'configuration', 'account_id', 'catalog_id', 'subscription_id', 'service_instance_name', 'status', 'apps'
+        'configuration', 'account_id', 'subscription_id', 'service_instance_name', 'status', 'apps'
     ]
 
     @property
@@ -222,10 +225,6 @@ class Difference(object):
     @property
     def account_id(self):
         return self.have.account_id
-
-    @property
-    def catalog_id(self):
-        return self.have.catalog_id
 
     @property
     def status(self):
@@ -343,7 +342,7 @@ class ModuleManager(object):
                 0]
         else:
             subscription = \
-            ([s for s in subscriptions if s['service_instance_name'] == self.want.service_instance_name] or [None])[0]
+                ([s for s in subscriptions if s['service_instance_name'] == self.want.service_instance_name] or [None])[0]
         if subscription is not None:
             self.have = ApiParameters(params=subscription)
             self._update_changed_options()
@@ -351,11 +350,7 @@ class ModuleManager(object):
         return False
 
     def get_catalog_id(self):
-        if self.want.catalog_id:
-            return self.want.catalog_id
-        catalogs = self.client.get_catalogs()
-        dnslb_catalog = next(c for c in catalogs['Catalogs'] if c['service_type'] == 'gslb')
-        return dnslb_catalog['catalog_id']
+        return 'c-aaQnOrPjGu'
 
     def get_account_id(self):
         if self.want.account_id:
@@ -443,9 +438,10 @@ class ModuleManager(object):
 
     def update_current(self):
         changed = False
+        catalog_id = self.get_catalog_id()
         payload = {
             'account_id': self.have.account_id,
-            'catalog_id': self.have.catalog_id,
+            'catalog_id': catalog_id,
             'service_type': 'gslb',
         }
 
@@ -476,8 +472,6 @@ class ModuleManager(object):
             payload['configuration']['update_comment'] = self.want.update_comment
             self.update_on_cloud(payload, subscription_id=self.have.subscription_id)
         return changed
-
-
 
     def get_subscriptions(self):
         account_id = self.get_account_id()
@@ -514,7 +508,6 @@ class ArgumentSpec(object):
         argument_spec = dict(
             subscription_id=dict(),
             account_id=dict(),
-            catalog_id=dict(),
             service_instance_name=dict(),
             configuration=dict(type=dict),
             state=dict(

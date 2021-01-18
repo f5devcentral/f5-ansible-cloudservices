@@ -60,7 +60,6 @@ class TestParameters(unittest.TestCase):
         args = dict(
             subscription_id='s-xxxxxxxxxx',
             account_id='a-xxxxxxxxxx',
-            catalog_id='c-xxxxxxxxxx',
             service_instance_name='s_i_n',
             state='absent',
             patch=True,
@@ -78,7 +77,6 @@ class TestParameters(unittest.TestCase):
 
         assert p.subscription_id == 's-xxxxxxxxxx'
         assert p.account_id == 'a-xxxxxxxxxx'
-        assert p.catalog_id == 'c-xxxxxxxxxx'
         assert p.service_instance_name == 's_i_n'
         assert p.state == 'absent'
         assert p.patch is True
@@ -110,7 +108,6 @@ class TestSubscriptionAppCreate(unittest.TestCase):
 
     def create_subscription(self, payload, *args, **kwargs):
         assert payload['account_id'] == 'a-xxxxxxxxxx'
-        assert payload['catalog_id'] == 'c-xxxxxxxxxx'
         assert payload['service_instance_name'] == 'new-fqdn.demo.com'
         assert payload['configuration']['waf_service']['application']['fqdn'] == 'new-fqdn.demo.com'
         assert payload['configuration']['waf_service']['application']['description'] == ''
@@ -119,7 +116,6 @@ class TestSubscriptionAppCreate(unittest.TestCase):
     def update_subscription(self, payload, subscription_id, *args, **kwargs):
         assert subscription_id == 's-xxxxxxxxxx'
         assert payload['account_id'] == 'a-xxxxxxxxxx'
-        assert payload['catalog_id'] == 'c-xxxxxxxxxx'
         assert payload['service_instance_name'] == 'new-fqdn.demo.com'
         assert payload['configuration']['waf_service']['application']['fqdn'] == 'new-fqdn.demo.com'
         assert payload['configuration']['waf_service']['application']['description'] == ''
@@ -191,7 +187,6 @@ class TestSubscriptionAppCreate(unittest.TestCase):
 
         assert results['changed'] is False
         assert results['account_id'] == 'a-xxxxxxxxxx'
-        assert results['catalog_id'] == 'c-xxxxxxxxxx'
         assert results['subscription_id'] == 's-xxxxxxxxxx'
         assert results['service_instance_name'] == 'fqdn.demo.com'
         assert results['configuration']['details']['CNAMEValue'] == 'waf-xxxxxxxxxx.waf.prd.f5aas.com'

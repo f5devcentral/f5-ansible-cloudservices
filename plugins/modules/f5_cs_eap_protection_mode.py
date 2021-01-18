@@ -18,47 +18,95 @@ DOCUMENTATION = r'''
 ---
 module: f5_cs_eap_protection_mode
 short_description: Update EAP Protection mode
-description: 
-    - This module will manage protection settings for EAP Application
+description: This module will manage protection settings for EAP Application
 version_added: 1.0
 options:
     subscription_id:
         description: ID of existing subscription
-    account_id:
-        description:
-            - ID of your main user’s primary account (where you will create instances)
     hi_risk_attack:
-        enabled: true
-        enforcement_mode: blocking
+        description: High-risk Attack configuration
+        enabled:
+            description: Turn on High-risk Attack Mitigation
+            default: True
+        enforcement_mode:
+            description: protection mode
+            default: "blocking"
+            choices:
+                - blocking
+                - monitoring
     malicious_ip:
-        enabled: true
-        enforcement_mode: blocking
-    threat_campaign
-        enabled: true
-        enforcement_mode: blocking
+        description: Malicious IP enforcement configuration
+        enabled:
+            description: Turn on Malicious IP enforcement
+            default: True
+        enforcement_mode:
+            description: protection mode
+            default: "blocking"
+            choices:
+                - blocking
+                - monitoring
+    threat_campaign:
+        description: Threat Campaign configuration
+        enabled:
+            description: Turn on Threat Campaign enforcement
+            default: True
+        enforcement_mode:
+            description: protection mode
+            default: "blocking"
+            choices:
+                - blocking
+                - monitoring
 author:
   - Alex Shemyakin
 '''
 
 EXAMPLES = '''
-description: 
-    - The examples can be found in /examples/f5_cs_eap_protection_mode.yml
+description: The examples can be found in /examples/f5_cs_eap_protection_mode.yml
 '''
 
 RETURN = r'''
-subscription_id
+subscription_id:
     description: ID of the changed EAP application
     sample: s-xxxxxxxxxx
 hi_risk_attack:
-    enabled: true
-    mode: blocking
+    description: High-risk Attack configuration
+    type: complex
+    contains:
+        enabled:
+            description: High-risk Attack Mitigation state
+            default: True
+        mode:
+            description: protection mode
+            default: "blocking"
+            choices:
+                - blocking
+                - monitoring
 malicious_ip:
-    enabled: true
-    mode: blocking
-threat_campaign
-    enabled: true
-    mode: blocking
-
+    description: Malicious IP enforcement configuration
+    type: complex
+    contains:
+        enabled:
+            description: Malicious IP enforcement state
+            default: True
+        mode:
+            description: protection mode
+            default: "blocking"
+            choices:
+                - blocking
+                - monitoring
+threat_campaign:
+    description: Threat Campaign configuration
+    type: complex
+    contains:
+        enabled:
+            description: Threat Campaign enforcement state
+            default: True
+        mode:
+            description: protection mode
+            default: "blocking"
+            choices:
+                - blocking
+                - monitoring
 '''
 
 try:
@@ -77,7 +125,7 @@ class Parameters(AnsibleF5Parameters):
     ]
 
     returnables = [
-        'subscription_id', 'account_id', 'hi_risk_attack', 'threat_campaign', 'malicious_ip'
+        'subscription_id', 'hi_risk_attack', 'threat_campaign', 'malicious_ip'
     ]
 
 

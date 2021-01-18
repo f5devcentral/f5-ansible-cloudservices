@@ -17,13 +17,12 @@ DOCUMENTATION = r'''
 ---
 module: f5_cs_organization
 short_description: Manage F5 CS Organizations
-description: 
-    - This module will manage Organizations for F5 CloudServices
+description: This module will manage Organizations for F5 CloudServices
 version_added: 1.0
 options:
     state:
         description:
-            - When C(present), will create or update Organization 
+            - When C(present), will create or update Organization
             - When C(fetch), will fetch Organizations
             - When C(absent), will remove Organization
         default: present
@@ -35,19 +34,24 @@ options:
         description: organization account id
     parent_account_id:
         description: parent account id. If specified will create a sub-account
-    name: 
+    name:
         description: organization name
     address:
-        street_1: 
-        street_2: 
-        city: 
-            description: city
-        state: 
-            description: state 
-        country: 
-            description: country code
-        postal_code: 
-            description: zip code
+        description: organization address
+        type: complex
+        contains:
+            street_1:
+                description: street
+            street_2:
+                description: street
+            city:
+                description: city
+            state:
+                description: state
+            country:
+                description: country code
+            postal_code:
+                description: zip code
     phone:
         description: phone
 author:
@@ -55,7 +59,7 @@ author:
 '''
 
 EXAMPLES = '''
-description: 
+description:
     - The examples can be found in /examples/f5_cs_organization.yml
 '''
 
@@ -64,7 +68,7 @@ account_id:
     description: organization account id
 parent_account_id:
     description: parent account id. If specified will create a sub-account
-name: 
+name:
     description: organization name
 address:
     description: organization address

@@ -116,8 +116,6 @@ class TestOrganizationOperate(unittest.TestCase):
         results = mm.exec_module()
 
         assert results['changed'] is True
-        users = results['users']
-        assert len(users) == 2
 
     def test_users_fetch(self, *args):
         set_module_args(dict(
@@ -133,8 +131,6 @@ class TestOrganizationOperate(unittest.TestCase):
         results = mm.exec_module()
 
         assert results['changed'] is False
-        users = results['users']
-        assert len(users) == 2
 
     def test_remove_user(self, *args):
         set_module_args(dict(
@@ -153,5 +149,3 @@ class TestOrganizationOperate(unittest.TestCase):
         results = mm.exec_module()
 
         assert results['changed'] is True
-        users = results['users']
-        assert len(users) == 2

@@ -18,24 +18,20 @@ DOCUMENTATION = r'''
 ---
 module: f5_cs_secondary_dns
 short_description: Manage DNS Subscription
-description: 
-    - This module will manage DNS for F5 CloudServices
+description: This module will manage DNS for F5 CloudServices
 version_added: 1.0
 options:
     subscription_id:
-        description:
-            - ID of existing subscription
+        description: ID of existing subscription
     account_id:
-        description:
-            - ID of your main user’s primary account (where you will create instances)
+        description: ID of your main user’s primary account (where you will create instances)
     service_instance_name:
-        description:
-            - zone name
+        description:  zone name
     configuration:
         description: detailed DNS configuration
     state:
         description:
-            - When C(present), will create or update DNS subscription. 
+            - When C(present), will create or update DNS subscription.
             - When C(absent), will remove DNS subscription
             - When C(fetch) will return subscription configuration by subscription_id of all subscriptions if not subscription id is not provided
             - When C(active) will activate subscription
@@ -53,7 +49,7 @@ author:
 '''
 
 EXAMPLES = '''
-description: 
+description:
     - The examples can be found in /examples/f5_cs_secondary_dns.yml
 '''
 
@@ -388,7 +384,7 @@ class ModuleManager(object):
         }
 
         changed = self.have.configuration['adns_service']['master_servers'].sort() != payload['configuration']['adns_service']['master_servers'].sort() \
-              or self.have.configuration['adns_service']['zone'] != payload['configuration']['adns_service']['zone']
+            or self.have.configuration['adns_service']['zone'] != payload['configuration']['adns_service']['zone']
 
         if changed:
             self.update_on_cloud(payload, subscription_id=self.want.subscription_id)

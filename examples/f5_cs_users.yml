@@ -28,12 +28,20 @@
       f5_cs_users:
         state: "fetch"
 
-    - name: Remove user
+    - name: Remove by user id
       f5_cs_users:
-        user_id: "{{ user_id }}"
+        users:
+          - user_id: "{{ user_id }}"
         state: "absent"
 
-    - name: Remove invite
+    - name: Remove by invite id
       f5_cs_users:
-        invite_id: "{{ invite_id }}"
+        users:
+          - invite_id: "{{ invite_id }}"
+        state: "absent"
+
+    - name: Remove by email
+      f5_cs_users:
+        users:
+          - email: "email@email.com"
         state: "absent"

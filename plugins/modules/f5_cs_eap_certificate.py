@@ -21,25 +21,24 @@ DOCUMENTATION = r'''
 ---
 module: f5_cs_eap_certificate
 short_description: Manage EAP certificate
-description: 
-    - This module will manage SSL certificate for EAP application
+description: This module will manage SSL certificate for EAP application
 version_added: 1.01
 options:
     state:
         description:
+            - When C(absent), will remove certificate or remove assignment
+            - When C(fetch), will read certificate
             - When C(present) will update or create certificate for EAP
-            - When C(absent), will remove certificate or remove assignment 
-            - When C(fetch), will read certificate 
         default: present
         choices:
-            - present
             - absent
             - fetch
-    certificate: 
+            - present
+    certificate:
         description: certificate body
-    private_key: 
+    private_key:
         description: certificate private key
-    passphrase: 
+    passphrase:
         description: certificate pass phrase
     certificate_id:
         description: previously created certificate id
@@ -47,58 +46,69 @@ options:
         description: subscription id used for fetch and absent states
     assigned_subscriptions:
         description: list of subscriptions with provided certificate
-        - subscription_id:
-            description: EAP subscription id
-          enabled: 
-            description: is HTTPS enabled
-          https_port:
-            description: https port
-          https_redirect: 
-            description: redirect traffic from http
-          update_comment: 
-            description: update comment
+        type: complex
+        contains:
+            subscription_id:
+                description: EAP subscription id
+            enabled:
+                description: is HTTPS enabled
+                default: True
+            https_port:
+                description: https port
+                default: 443
+            https_redirect:
+                description: redirect traffic from http
+                default: True
+            tls_version:
+                description: TLS Version
+                default: "1.2"
+            update_comment:
+                description: update comment
+                default: "Update EAP certificate"
 author:
   - Alex Shemyakin
 '''
 
 EXAMPLES = '''
-description: 
+description:
     - The examples can be found in /examples/f5_cs_eap_certificate.yml
 '''
 
 RETURN = r'''
-
 certificate_id:
     description: id of created or used certificate
 assigned_subscriptions:
     description: list of subscriptions where certificated is used
-    - subscription_id:
-        description: EAP subscription id
-      enabled: 
-        description: is HTTPS enabled
-      https_port:
-        description: https port
-      https_redirect: 
-        description: redirect traffic from http
-      update_comment: 
-        description: update comment
+    type: complex
+    contains:
+        subscription_id:
+            description: EAP subscription id
+        enabled:
+            description: is HTTPS enabled
+        https_port:
+            description: https port
+        https_redirect:
+            description: redirect traffic from http
+        update_comment:
+            description: update comment
 expiration_date:
     description: certificate expiration date
-common_name
+common_name:
     description: certificate common name
 subscription_id:
     description: id of used subscription
 certificates:
     description: list of available certificates
-    - account_id:
-        description: account id associated with certificate
-      common_name:
-        description: certificate common name
-      expiration_date:
-        description: certificate expiration date
-      id:
-        description: certificate id
-
+    type: complex
+    contains:
+        account_id:
+            description: account id associated with certificate
+        common_name:
+            description: certificate common name
+        expiration_date:
+            description: certificate expiration date
+        id:
+            description: certificate id
 '''
 
 try:
@@ -473,10 +483,10 @@ class ModuleManager(object):
 
             certificates = self.get_certificates()
             certificate = \
-            ([x for x in certificates if datetime.datetime.strptime(x['expiration_date'], '%Y-%m-%dT%H:%M:%SZ') ==
-              provided_exp_date and x['common_name'] == provided_common_name][:1] or [dict()])[0]
+                ([x for x in certificates if datetime.datetime.strptime(x['expiration_date'],
+                  '%Y-%m-%dT%H:%M:%SZ') == provided_exp_date and x['common_name'] == provided_common_name][:1] or [dict()])[0]
             return certificate.get('id', None)
-        except:
+        except Exception:
             return None
 
     def upload_certificate(self):
@@ -508,7 +518,10 @@ class ArgumentSpec(object):
         )
 
         argument_spec = dict(
-            state=dict(required=False, default='present'),
+            state=dict(
+                default='present',
+                choices=['present', 'absent', 'fetch']
+            ),
             account_id=dict(required=False, default=None),
             subscription_id=dict(required=False, default=None),
             certificate_id=dict(required=False, default=None),

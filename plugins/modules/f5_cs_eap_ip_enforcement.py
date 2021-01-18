@@ -18,29 +18,29 @@ DOCUMENTATION = r'''
 ---
 module: f5_cs_eap_ip_enforcement
 short_description: Update IP Enforcement Rules
-description: 
-    - This module will add, remove and update Essential App Protect IP Enforcement Rules list
+description: This module will add, remove and update Essential App Protect IP Enforcement Rules list
 version_added: 1.0
 options:
     subscription_id:
         description: ID of existing subscription
     ip_enforcement:
-        - address:
-            description: IP address
-            required: True
-          description:
-            description: Rule description
-            default:             
-          action:
-            description: Block or Allow
-            default: block
-          log:
-            description: Log requests
-            default: False
+        description: List of IP enforcement rules
+        type: complex
+        contains:
+            address:
+                description: IP address
+                required: True
+            description:
+                description: Rule description
+            action:
+                description: Block or Allow
+                default: block
+            log:
+                description: Log requests
+                default: False
     account_id:
-        description:
-            - ID of your main user’s primary account (where you will create instances)
-    append: 
+        description: ID of your main user’s primary account (where you will create instances)
+    append:
         description: Append provided IPs to the existing list
         default: False
     state:
@@ -56,31 +56,33 @@ author:
 '''
 
 EXAMPLES = '''
-description: 
+description:
     - The examples can be found in /examples/f5_cs_eap_ip_enforcement.yml
 '''
 
 RETURN = r'''
-subscription_id
+subscription_id:
     description: ID of the changed EAP application
     sample: s-xxxxxxxxxx
 ip_enforcement:
-    - address:
-        description: IP address
-        required: True   
-        sample: 192.168.1.1
-      description:
-        description: Rule description
-        default:             
-        sample: dev ops
-      action:
-        description: Block or Allow
-        default: block
-        sample: allow
-      log:
-        description: Log requests
-        default: False
-        sample: false
+    description: List of IP enforcement rules
+    type: complex
+    contains:
+        address:
+            description: IP address
+            required: True
+            sample: 192.168.1.1
+        description:
+            description: Rule description
+            sample: dev ops
+        action:
+            description: Block or Allow
+            default: block
+            sample: allow
+        log:
+            description: Log requests
+            default: False
+            sample: True
 '''
 
 try:
