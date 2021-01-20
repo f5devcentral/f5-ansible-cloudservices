@@ -51,15 +51,16 @@ https://clouddocs.f5.com/cloud-services/latest/f5-cloud-services-Essential.App.P
 API User's Guide: https://clouddocs.f5.com/cloud-services/latest/f5-cloud-services-Essential.App.Protect-API.UsersGuide.html
 
 **Modules**:
+ - f5_cs_catalog_items 
+ - f5_cs_dnslb_ip_endpoints 
+ - f5_cs_dnslb_subscription_app 
  - f5_cs_eap_certificate
  - f5_cs_eap_cname_fetch
  - f5_cs_eap_ip_enforcement
- - f5_cs_eap_subscription_app
- - f5_cs_dnslb_subscription_app 
- - f5_cs_catalog_items 
- - f5_cs_dnslb_ip_endpoints 
  - f5_cs_eap_protection_mode 
+ - f5_cs_eap_subscription_app
  - f5_cs_organizations 
+ - f5_cs_request
  - f5_cs_secondary_dns
  - f5_cs_users 
  

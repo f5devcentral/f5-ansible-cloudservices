@@ -1,0 +1,38 @@
+- name: Sample requests
+  hosts: controller
+  gather_facts: false
+  collections:
+    - f5devcentral.cloudservices
+  connection: httpapi
+
+  vars:
+    ansible_network_os: f5devcentral.cloudservices.f5
+    ansible_host: "api.cloudservices.f5.com"
+    ansible_user: "user@example.com"
+    ansible_httpapi_password: "password"
+    ansible_httpapi_use_ssl: yes
+
+  tasks:
+    - name: Get current user
+      f5_cs_request:
+        url: "/v1/svc-account/user"
+        method: "GET"
+
+    - name: Create Secondary DNS Subscription
+      f5_cs_request:
+        url: "/v1/svc-subscription/subscriptions"
+        method: "POST"
+        body: {
+          "account_id": "a-xxxxxxxxx",
+          "catalog_id": "c-xxxxxxxxx",
+          "service_instance_name": "example.com",
+          "configuration": {
+            "adns_service": {
+              "zone": "example.com",
+              "master_servers": [
+                  "11.22.33.44"
+              ]
+            }
+          },
+          "service_type": "adns"
+        }
