@@ -1,0 +1,98 @@
+- name: Manage EAP Application
+  hosts: webservers
+  gather_facts: false
+  collections:
+    - f5devcentral.cloudservices
+  connection: httpapi
+
+  vars:
+    ansible_network_os: f5devcentral.cloudservices.f5
+    ansible_host: "api.cloudservices.f5.com"
+    ansible_user: "user@example.com"
+    ansible_httpapi_password: "password"
+    ansible_httpapi_use_ssl: yes
+    zone: "fqdn.demo.net"
+    subscription_id: "s-xxxxxxxx"
+
+  tasks:
+    - name: Read All Primary DNS apps
+      f5_cs_primary_dns:
+        state: "fetch"
+
+    - name: Create Primary DNS instance
+      f5_cs_primary_dns:
+        service_instance_name: "{{ zone }}"
+        zone: "{{ zone }}"
+
+    - name: Create Primary DNS instance
+      f5_cs_primary_dns:
+        service_instance_name: "my_app"
+        zone: "{{ zone }}"
+
+    - name: Fetch EAP instance
+      f5_cs_primary_dns:
+        subscription_id: "{{ subscription_id }}"
+        state: "fetch"
+
+    - name: Partial Primary DNS update
+      f5_cs_primary_dns:
+        subscription_id: "{{ subscription_id }}"
+        patch: true
+        configuration:
+          update_comment: "update Primary DNS subscription"
+          dns_service:
+            records:
+              - "":
+                  type: "NS"
+                  ttl: "86400"
+                  values:
+                    - "ns1.f5cloudservices.com"
+                    - "ns2.f5cloudservices.com"
+              - "au-ui":
+                  type: "A"
+                  ttl: "3600"
+                  values:
+                    - "127.0.0.1"
+
+    - name: Full Primary DNS update
+      f5_cs_primary_dns:
+        subscription_id: "{{ subscription_id }}"
+        patch: false
+        service_instance_name: "my_app"
+        configuration:
+          update_comment: "update Primary DNS subscription"
+          dns_service:
+            zone: "demozone1.securelab.online"
+            ttl: 86400
+            refresh: 86400
+            retry: 7200
+            remark: ""
+            expire: 360000
+            negative_ttl: 1800
+            records:
+              - "":
+                  type: "NS"
+                  ttl: "86400"
+                  values:
+                  - "ns1.f5cloudservices.com"
+                  - "ns2.f5cloudservices.com"
+              - "au-ui":
+                  type: "A"
+                  ttl: "3600"
+                  values:
+                    - "127.0.0.1"
+
+    - name: Suspend Primary DNS instance
+      f5_cs_primary_dns:
+        subscription_id: "{{ subscription_id }}"
+        state: "suspended"
+
+    - name: Activate Primary DNS instance
+      f5_cs_primary_dns:
+        subscription_id: "{{ subscription_id }}"
+        state: "active"
+
+    - name: Remove Primary DNS instance
+      f5_cs_primary_dns:
+        subscription_id: "{{ subscription_id }}"
+        state: "absent"

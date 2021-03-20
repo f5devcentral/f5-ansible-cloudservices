@@ -1,0 +1,52 @@
+- name: Manage EAP Application
+  hosts: webservers
+  gather_facts: false
+  collections:
+    - f5devcentral.cloudservices
+  connection: httpapi
+
+  vars:
+    ansible_network_os: f5devcentral.cloudservices.f5
+    ansible_host: "api.cloudservices.f5.com"
+    ansible_user: "user@example.com"
+    ansible_httpapi_password: "password"
+    ansible_httpapi_use_ssl: yes
+    instance_ip: "127.0.0.1"
+    subscription_id: "s-xxxxxxxx"
+
+  tasks:
+    - name: Read All Primary DNS apps
+      f5_cs_primary_dns_records:
+        subscription_id: "{{ subscription_id }}"
+        state: "fetch"
+
+    - name: Add record
+      f5_cs_primary_dns_records:
+        subscription_id: "{{ subscription_id }}"
+        state: present
+        records:
+          "demo-ansible":
+            - type: "A"
+              values:
+                - "{{ instance_ip }}"
+              ttl: 86400
+
+    - name: Append record
+      f5_cs_primary_dns_records:
+        subscription_id: "{{ subscription_id }}"
+        state: present
+        append: true
+        records:
+          "demo-ansible":
+            - type: "A"
+              values:
+                - "{{ instance_ip }}"
+              ttl: 86400
+
+    - name: Remove record
+      f5_cs_primary_dns_records:
+        subscription_id: "{{ subscription_id }}"
+        state: absent
+        records:
+          "demo-ansible":
+          "demo-ansibl2":
