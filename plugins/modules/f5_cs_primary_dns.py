@@ -17,25 +17,25 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 
 DOCUMENTATION = r'''
 ---
-module: f5_cs_dnslb_subscription_app
-short_description: Manage DNS Load Balance Subscription
-description: This module will manage DNS Load Balance application for F5 CloudServices
+module: f5_cs_primary_dns
+short_description: Manage Primary DNS Subscription
+description: This module will manage Primary DNS application for F5 CloudServices
 version_added: 1.0
 options:
     subscription_id:
         description: ID of existing subscription
     service_instance_name:
-        description:  FQDN record name or application name if FQDN was specified in the configuration property
+        description:  Zone name or application name if Zone is specified in the configuration property
         required: True
     account_id:
         description: ID of your main user’s primary account (where you will create instances)
     state:
         description:
-            - When C(absent), will remove DNS LB subscription
-            - When C(active), will activate DNS LB subscription
-            - When C(fetch), will return DNS LB subscription
-            - When C(present), will create or update DNS LB subscription.
-            - When C(suspended), will suspend DNS LB subscription.
+            - When C(absent), will remove Primary DNS subscription
+            - When C(active), will activate Primary DNS subscription
+            - When C(fetch), will return Primary DNS subscription
+            - When C(present), will create or update Primary DNS subscription.
+            - When C(suspended), will suspend Primary DNS subscription.
         default: present
         choices:
             - absent
@@ -46,15 +46,17 @@ options:
     patch:
         description: When C(True), will merge provided configuration property with existing cloud configuration
         default: False
+    zone:
+        description: zone name
     configuration:
-        description: Detailed DNS LB application configuration
+        description: Detailed Primary DNS application configuration
         type: complex
         contains:
             update_comment:
                 description: Brief description of changes
-                default: Update DNS LB application
-            gslb_service:
-                description: Describes DNS Load Balance service instance configuration.
+                default: Update Primary DNS application
+            dns_service:
+                description: Describes Primary DNS service instance configuration.
     wait_status_change:
         description: wait until subscription is activated
         default: True
@@ -66,31 +68,31 @@ author:
 '''
 
 EXAMPLES = '''
-description: The examples can be found in /examples/f5_cs_dnslb_subscription_app.yml
+description: The examples can be found in /examples/f5_cs_primary_dns.yml
 '''
 
 RETURN = r'''
 subscription_id:
-    description: ID of the new or changed DNS LB application
+    description: ID of the new or changed Primary DNS application
     sample: s-xxxxxxxxxx
 account_id:
     description: ID of the account with changes
     sample: a-xxxxxxxxxx
 service_instance_name:
-    description: DNS LB application name or FQDN
+    description: Primary DNS application name or FQDN
     sample: fqdn.demo.net
 configuration:
-    description: The DNS LB application configuration from the cloud
+    description: The Primary DNS application configuration from the cloud
     type: complex
     contains:
-        gslb_service:
-            description: DNS LB configuration
-            sample: DNS LB Configuration
+        dns_service:
+            description: Primary DNS configuration
+            sample: Primary DNS Configuration
         details:
             description: Additional properties, such as CNAME or recommended zone list
-            sample: DNS LB Details
+            sample: Primary DNS Details
 apps:
-    description: list of available DNSLB apps
+    description: list of available Primary DNS apps
 status:
     description: subscription status
 '''
@@ -132,6 +134,22 @@ class ApiParameters(Parameters):
     def status(self):
         return self._values['status']
 
+    @property
+    def subscription_id(self):
+        return self._values['subscription_id']
+
+    @property
+    def service_instance_name(self):
+        return self._values['service_instance_name']
+
+    @property
+    def service_instance_id(self):
+        return self._values['service_instance_id']
+
+    @property
+    def account_id(self):
+        return self._values['account_id']
+
 
 class ModuleParameters(Parameters):
     @property
@@ -159,6 +177,15 @@ class ModuleParameters(Parameters):
     @property
     def activate(self):
         return self._values['activate']
+
+    @property
+    def zone(self):
+        if self._values['zone']:
+            return self._values['zone']
+
+        if self._values['service_instance_name']:
+            return self._values['service_instance_name']
+        return None
 
 
 class Changes(Parameters):
@@ -338,8 +365,7 @@ class ModuleManager(object):
         subscriptions = self.get_subscriptions()
         subscription = None
         if self.want.subscription_id:
-            subscription = ([s for s in subscriptions if s['subscription_id'] == self.want.subscription_id] or [None])[
-                0]
+            subscription = ([s for s in subscriptions if s['subscription_id'] == self.want.subscription_id] or [None])[0]
         else:
             subscription = \
                 ([s for s in subscriptions if s['service_instance_name'] == self.want.service_instance_name] or [None])[0]
@@ -350,7 +376,7 @@ class ModuleManager(object):
         return False
 
     def get_catalog_id(self):
-        return 'c-aaQnOrPjGu'
+        return 'c-aau0eSVXtL'
 
     def get_account_id(self):
         if self.want.account_id:
@@ -362,12 +388,32 @@ class ModuleManager(object):
         account_id = self.get_account_id()
         catalog_id = self.get_catalog_id()
 
+        configuration = self.want.configuration
+
+        if configuration is None:
+            configuration = {
+                "schemaVersion": "0.1",
+                "id": "createPrimary",
+                "dns_service": {
+                    "zone": self.want.zone,
+                    "accountId": account_id,
+                    "owner": "dns-admin@f5cloudservices.com",
+                    "primaryMaster": "ns1.f5cloudservices.com",
+                    "ttl": 86400,
+                    "refresh": 86400,
+                    "retry": 7200,
+                    "remark": "",
+                    "expire": 360000,
+                    "negative_ttl": 1800,
+                }
+            }
+
         payload = {
-            'account_id': account_id,
-            'catalog_id': catalog_id,
-            'service_instance_name': self.want.service_instance_name,
-            'service_type': 'gslb',
-            'configuration': self.want.configuration,
+            "account_id": account_id,
+            "catalog_id": catalog_id,
+            "service_instance_name": self.want.service_instance_name,
+            "service_type": "dns",
+            "configuration": configuration,
         }
         self.create_on_cloud(payload)
 
@@ -442,7 +488,7 @@ class ModuleManager(object):
         payload = {
             'account_id': self.have.account_id,
             'catalog_id': catalog_id,
-            'service_type': 'gslb',
+            'service_type': 'dns',
         }
 
         if self.want.configuration and self.want.patch is False:
@@ -450,32 +496,62 @@ class ModuleManager(object):
             payload['service_instance_name'] = self.want.service_instance_name
 
             h_config = copy.deepcopy(self.have.configuration)
-            if h_config.get('details', None):
-                del h_config['details']
+            if h_config.get('create_time', None):
+                del h_config['create_time']
+            if h_config.get('update_time', None):
+                del h_config['update_time']
+            if h_config.get('cancel_time', None):
+                del h_config['cancel_time']
+            if h_config.get('end_time', None):
+                del h_config['end_time']
             if h_config.get('nameservers', None):
                 del h_config['nameservers']
+            if h_config.get('dns_service', None):
+                if h_config['dns_service'].get('admin', None):
+                    del h_config['dns_service']['admin']
+                if h_config['dns_service'].get('primary_nameserver', None):
+                    del h_config['dns_service']['primary_nameserver']
 
             changed = self.deep_changes_check(self.want.configuration, h_config, True)
             changed = changed or self.want.service_instance_name != self.have.service_instance_name
         else:
             payload['configuration'] = copy.deepcopy(self.changes.configuration)
-            if payload['configuration'].get('details', None):
-                del payload['configuration']['details']
+            if payload['configuration'].get('create_time', None):
+                del payload['configuration']['create_time']
+            if payload['configuration'].get('update_time', None):
+                del payload['configuration']['update_time']
+            if payload['configuration'].get('cancel_time', None):
+                del payload['configuration']['cancel_time']
+            if payload['configuration'].get('end_time', None):
+                del payload['configuration']['end_time']
             if payload['configuration'].get('nameservers', None):
                 del payload['configuration']['nameservers']
+
+            if payload['configuration'].get('dns_service', None):
+                if payload['configuration']['dns_service'].get('admin', None):
+                    del payload['configuration']['dns_service']['admin']
+                if payload['configuration']['dns_service'].get('primary_nameserver', None):
+                    del payload['configuration']['dns_service']['primary_nameserver']
+
             payload['service_instance_name'] = self.want.service_instance_name or self.have.service_instance_name
             if self.want.configuration:
                 changed = self.deep_changes_check(self.want.configuration, self.have.configuration, False)
                 changed = changed or payload['service_instance_name'] != self.have.service_instance_name
 
         if changed is True:
+            payload['subscription_id'] = self.have.subscription_id
+            payload['configuration']['dns_service']['id'] = self.have.subscription_id
+            payload['configuration']['dns_service']['accountId'] = self.have.account_id
+            payload['configuration']['schemaVersion'] = '0.1'
             payload['configuration']['update_comment'] = self.want.update_comment
+            payload['configuration']['dns_service']['primaryMaster'] = "ns1.f5cloudservices.com"
+            payload['configuration']['dns_service']['owner'] = "dns-admin@f5cloudservices.com"
             self.update_on_cloud(payload, subscription_id=self.have.subscription_id)
         return changed
 
     def get_subscriptions(self):
         account_id = self.get_account_id()
-        response = self.client.get_subscriptions_by_type(subscription_type='gslb', account_id=account_id)
+        response = self.client.get_subscriptions_by_type(subscription_type='dns', account_id=account_id)
         return response.get('subscriptions', [])
 
     def read_subscriptions_from_cloud(self):
@@ -510,11 +586,12 @@ class ArgumentSpec(object):
             account_id=dict(),
             service_instance_name=dict(),
             configuration=dict(type=dict),
+            zone=dict(),
             state=dict(
                 default='present',
                 choices=['present', 'absent', 'fetch', 'active', 'suspended']
             ),
-            update_comment=dict(default='update DNS LB configuration'),
+            update_comment=dict(default='update Primary DNS configuration'),
             patch=dict(
                 default=False,
                 type='bool',

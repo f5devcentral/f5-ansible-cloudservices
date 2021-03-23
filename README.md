@@ -20,7 +20,7 @@ Installing the Build
     git clone git@github.com:f5devcentral/f5-ansible-cloudservices.git
     cd ./f5-ansible-cloudservices
     ansible-galaxy collection build --force
-    ansible-galaxy collection install f5devcentral-cloudservices-1.1.0.tar.gz -p ./collections/
+    ansible-galaxy collection install f5devcentral-cloudservices-1.2.0.tar.gz -p ./collections/
 
     # Approach 2
     # To install from the Ansible Galaxy
@@ -51,17 +51,20 @@ https://clouddocs.f5.com/cloud-services/latest/f5-cloud-services-Essential.App.P
 API User's Guide: https://clouddocs.f5.com/cloud-services/latest/f5-cloud-services-Essential.App.Protect-API.UsersGuide.html
 
 **Modules**:
+ - f5_cs_catalog_items 
+ - f5_cs_dnslb_ip_endpoints 
+ - f5_cs_dnslb_subscription_app 
  - f5_cs_eap_certificate
  - f5_cs_eap_cname_fetch
  - f5_cs_eap_ip_enforcement
- - f5_cs_eap_subscription_app
- - f5_cs_dnslb_subscription_app 
- - f5_cs_catalog_items 
- - f5_cs_dnslb_ip_endpoints 
  - f5_cs_eap_protection_mode 
+ - f5_cs_eap_subscription_app
  - f5_cs_organizations 
+ - f5_cs_request
  - f5_cs_secondary_dns
  - f5_cs_users 
+ - f5_cs_primary_dns
+ - f5_cs_primary_dns_records
  
 Example Playbook
 ------------
