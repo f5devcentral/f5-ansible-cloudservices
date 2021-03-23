@@ -456,7 +456,7 @@ class ModuleManager(object):
                 del h_config['nameservers']
 
             changed = self.deep_changes_check(self.want.configuration, h_config, True)
-            changed = changed or self.want.service_instance_name == self.have.service_instance_name
+            changed = changed or self.want.service_instance_name != self.have.service_instance_name
         else:
             payload['configuration'] = copy.deepcopy(self.changes.configuration)
             if payload['configuration'].get('details', None):

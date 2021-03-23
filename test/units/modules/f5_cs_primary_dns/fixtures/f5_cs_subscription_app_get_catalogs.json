@@ -1,0 +1,364 @@
+{
+  "Catalogs": [
+    {
+      "catalog_id": "c-aa6-MyRYD2",
+      "name": "Device ID+",
+      "description": "Identify the devices visiting your application with F5's high quality device identifier",
+      "status": "STATUS_ACTIVE",
+      "logo_url": "https://staging-ui.srv.f5aas.com/static/media/logo.6a1ab75a.svg",
+      "info_url": "https://www.f5.com",
+      "service_type": "did",
+      "deleted": false,
+      "preview": false,
+      "providers": [
+        {
+          "name": "standard",
+          "preview": false,
+          "status": "STATUS_ACTIVE",
+          "info_url": "https://www.f5.com",
+          "invite_only": false,
+          "request_access_url": "",
+          "trial_days": 0,
+          "pricing_url": "",
+          "preview_end_time": null
+        },
+        {
+          "name": "contract",
+          "preview": false,
+          "status": "STATUS_ACTIVE",
+          "info_url": "https://www.f5.com",
+          "invite_only": false,
+          "request_access_url": "",
+          "trial_days": 0,
+          "pricing_url": "",
+          "preview_end_time": null
+        }
+      ],
+      "aws_contracts_yearly": false,
+      "pricing_url": "",
+      "free": true,
+      "create_time": "2020-11-24T07:32:07.588676Z",
+      "update_time": "2020-12-01T09:54:21.817468Z",
+      "delete_time": null,
+      "preview_end_time": null
+    },
+    {
+      "catalog_id": "c-aa9KThmt8A",
+      "name": "Managed Service Provider",
+      "description": "Managed service provider.",
+      "status": "STATUS_ACTIVE",
+      "logo_url": "https://staging-ui.srv.f5aas.com/static/media/logo.6a1ab75a.svg",
+      "info_url": "https://www.f5.com/products/ways-to-deploy/cloud-services",
+      "service_type": "msp",
+      "deleted": false,
+      "preview": false,
+      "providers": [
+        {
+          "name": "standard",
+          "preview": false,
+          "status": "STATUS_ACTIVE",
+          "info_url": "https://www.f5.com/products/ways-to-deploy/cloud-services",
+          "invite_only": false,
+          "request_access_url": "",
+          "trial_days": 0,
+          "pricing_url": "",
+          "preview_end_time": null
+        },
+        {
+          "name": "contract",
+          "preview": false,
+          "status": "STATUS_ACTIVE",
+          "info_url": "https://www.f5.com/products/ways-to-deploy/cloud-services",
+          "invite_only": false,
+          "request_access_url": "",
+          "trial_days": 0,
+          "pricing_url": "",
+          "preview_end_time": null
+        }
+      ],
+      "aws_contracts_yearly": false,
+      "pricing_url": "",
+      "free": false,
+      "create_time": "2021-02-16T22:41:45.894971Z",
+      "update_time": "2021-02-16T22:41:45.894971Z",
+      "delete_time": null,
+      "preview_end_time": null
+    },
+    {
+      "catalog_id": "c-aa9N0jgHI4",
+      "name": "Essential App Protect",
+      "description": "Secure your apps and protect your assets.",
+      "status": "STATUS_ACTIVE",
+      "logo_url": "https://staging-ui.srv.f5aas.com/static/media/logo.6a1ab75a.svg",
+      "info_url": "https://www.f5.com/products/ways-to-deploy/cloud-services/security-cloud-services",
+      "service_type": "waf",
+      "deleted": false,
+      "preview": false,
+      "providers": [
+        {
+          "name": "aws",
+          "preview": false,
+          "status": "STATUS_ACTIVE",
+          "info_url": "https://aws.amazon.com/marketplace/pp/B0861TXCX5",
+          "invite_only": false,
+          "request_access_url": "",
+          "trial_days": 15,
+          "pricing_url": "https://f5cloudservices.zendesk.com/hc/en-us/articles/360046622513-F5-Essential-App-Protect-Service-Pricing",
+          "preview_end_time": "2020-03-18T00:00:00Z"
+        },
+        {
+          "name": "aws_contract",
+          "preview": false,
+          "status": "STATUS_ACTIVE",
+          "info_url": "http://aws.amazon.com/marketplace/pp/B08B3NBHD8",
+          "invite_only": false,
+          "request_access_url": "",
+          "trial_days": 0,
+          "pricing_url": "https://f5cloudservices.zendesk.com/hc/en-us/articles/360046622513-F5-Essential-App-Protect-Service-Pricing",
+          "preview_end_time": null
+        },
+        {
+          "name": "standard",
+          "preview": false,
+          "status": "STATUS_ACTIVE",
+          "info_url": "https://www.f5.com/products/ways-to-deploy/cloud-services/security-cloud-services",
+          "invite_only": false,
+          "request_access_url": "",
+          "trial_days": 30,
+          "pricing_url": "https://f5cloudservices.zendesk.com/hc/en-us/articles/360046622513-F5-Essential-App-Protect-Service-Pricing",
+          "preview_end_time": null
+        },
+        {
+          "name": "contract",
+          "preview": false,
+          "status": "STATUS_ACTIVE",
+          "info_url": "https://www.f5.com/products/ways-to-deploy/cloud-services/security-cloud-services",
+          "invite_only": false,
+          "request_access_url": "",
+          "trial_days": 0,
+          "pricing_url": "https://f5cloudservices.zendesk.com/hc/en-us/articles/360046622513-F5-Essential-App-Protect-Service-Pricing",
+          "preview_end_time": null
+        }
+      ],
+      "aws_contracts_yearly": true,
+      "pricing_url": "https://f5cloudservices.zendesk.com/hc/en-us/articles/360046622513-F5-Essential-App-Protect-Service-Pricing",
+      "free": false,
+      "create_time": "2019-07-22T21:21:49.494932Z",
+      "update_time": "2020-01-09T21:32:03.150618Z",
+      "delete_time": null,
+      "preview_end_time": null
+    },
+    {
+      "catalog_id": "c-aacHacMCM8",
+      "name": "Beacon",
+      "description": "Gain full visibility and insights across your application landscape.",
+      "status": "STATUS_ACTIVE",
+      "logo_url": "https://staging-ui.srv.f5aas.com/static/media/logo.6a1ab75a.svg",
+      "info_url": "https://clouddocs.f5.com/cloud-services/latest/f5-cloud-services-Beacon-About.html",
+      "service_type": "ow",
+      "deleted": false,
+      "preview": false,
+      "providers": [
+        {
+          "name": "aws",
+          "preview": true,
+          "status": "STATUS_ACTIVE",
+          "info_url": "https://aws.amazon.com/marketplace/pp/B081RB11W3",
+          "invite_only": false,
+          "request_access_url": "",
+          "trial_days": 0,
+          "pricing_url": "",
+          "preview_end_time": null
+        },
+        {
+          "name": "aws_contract",
+          "preview": false,
+          "status": "STATUS_ACTIVE",
+          "info_url": "https://aws.amazon.com/marketplace/pp/B087LBCL3F",
+          "invite_only": false,
+          "request_access_url": "",
+          "trial_days": 0,
+          "pricing_url": "https://f5cloudservices.zendesk.com/hc/en-us/articles/360046013674-F5-Beacon-pricing",
+          "preview_end_time": null
+        },
+        {
+          "name": "standard",
+          "preview": true,
+          "status": "STATUS_ACTIVE",
+          "info_url": "https://f5cloudservices.zendesk.com/hc/en-us/articles/360061496854-About-F5-Beacon",
+          "invite_only": false,
+          "request_access_url": "",
+          "trial_days": 0,
+          "pricing_url": "",
+          "preview_end_time": null
+        },
+        {
+          "name": "contract",
+          "preview": false,
+          "status": "STATUS_ACTIVE",
+          "info_url": "https://clouddocs.f5.com/cloud-services/latest/f5-cloud-services-Beacon-About.html",
+          "invite_only": false,
+          "request_access_url": "",
+          "trial_days": 0,
+          "pricing_url": "https://f5cloudservices.zendesk.com/hc/en-us/articles/360046013674-F5-Beacon-pricing",
+          "preview_end_time": null
+        }
+      ],
+      "aws_contracts_yearly": false,
+      "pricing_url": "https://f5cloudservices.zendesk.com/hc/en-us/articles/360046013674-F5-Beacon-pricing",
+      "free": false,
+      "create_time": "2019-07-22T21:21:49.494932Z",
+      "update_time": "2019-07-22T21:21:49.494932Z",
+      "delete_time": null,
+      "preview_end_time": null
+    },
+    {
+      "catalog_id": "c-aaQnOrPjGu",
+      "name": "DNS Load Balancer",
+      "description": "Load balance your traffic across servers and regions.",
+      "status": "STATUS_ACTIVE",
+      "logo_url": "https://staging-ui.srv.f5aas.com/static/media/logo.6a1ab75a.svg",
+      "info_url": "https://www.f5.com/products/ways-to-deploy/cloud-services/dns-load-balancer-cloud-service",
+      "service_type": "gslb",
+      "deleted": false,
+      "preview": false,
+      "providers": [
+        {
+          "name": "aws",
+          "preview": false,
+          "status": "STATUS_ACTIVE",
+          "info_url": "http://aws.amazon.com/marketplace/pp/B07W3P8HM4",
+          "invite_only": false,
+          "request_access_url": "",
+          "trial_days": 15,
+          "pricing_url": "https://f5cloudservices.zendesk.com/hc/en-us/articles/360046451493-F5-DNS-Load-Balancer-Cloud-Service-Pricing",
+          "preview_end_time": null
+        },
+        {
+          "name": "standard",
+          "preview": false,
+          "status": "STATUS_ACTIVE",
+          "info_url": "https://www.f5.com/products/ways-to-deploy/cloud-services/dns-load-balancer-cloud-service",
+          "invite_only": false,
+          "request_access_url": "",
+          "trial_days": 30,
+          "pricing_url": "https://f5cloudservices.zendesk.com/hc/en-us/articles/360046451493-F5-DNS-Load-Balancer-Cloud-Service-Pricing",
+          "preview_end_time": null
+        },
+        {
+          "name": "contract",
+          "preview": false,
+          "status": "STATUS_ACTIVE",
+          "info_url": "https://www.f5.com/products/ways-to-deploy/cloud-services/dns-load-balancer-cloud-service",
+          "invite_only": false,
+          "request_access_url": "",
+          "trial_days": 0,
+          "pricing_url": "https://f5cloudservices.zendesk.com/hc/en-us/articles/360046451493-F5-DNS-Load-Balancer-Cloud-Service-Pricing",
+          "preview_end_time": null
+        }
+      ],
+      "aws_contracts_yearly": false,
+      "pricing_url": "https://f5cloudservices.zendesk.com/hc/en-us/articles/360046451493-F5-DNS-Load-Balancer-Cloud-Service-Pricing",
+      "free": false,
+      "create_time": "2019-07-22T21:21:49.494932Z",
+      "update_time": "2019-09-25T23:26:52.756514Z",
+      "delete_time": null,
+      "preview_end_time": null
+    },
+    {
+      "catalog_id": "c-aau0eSVXtL",
+      "name": "Primary DNS",
+      "description": "Manage your DNS zones with the F5 Cloud DNS Primary service.",
+      "status": "STATUS_ACTIVE",
+      "logo_url": "https://staging-ui.srv.f5aas.com/static/media/logo.6a1ab75a.svg",
+      "info_url": "https://www.f5.com/products/ways-to-deploy/cloud-services/dns-cloud-service",
+      "service_type": "dns",
+      "deleted": false,
+      "preview": true,
+      "providers": [
+        {
+          "name": "standard",
+          "preview": true,
+          "status": "STATUS_ACTIVE",
+          "info_url": "https://www.f5.com/products/ways-to-deploy/cloud-services/dns-cloud-service",
+          "invite_only": false,
+          "request_access_url": "",
+          "trial_days": 0,
+          "pricing_url": "",
+          "preview_end_time": null
+        },
+        {
+          "name": "contract",
+          "preview": true,
+          "status": "STATUS_ACTIVE",
+          "info_url": "https://www.f5.com/products/ways-to-deploy/cloud-services/dns-cloud-service",
+          "invite_only": false,
+          "request_access_url": "",
+          "trial_days": 0,
+          "pricing_url": "",
+          "preview_end_time": null
+        }
+      ],
+      "aws_contracts_yearly": false,
+      "pricing_url": "",
+      "free": false,
+      "create_time": "2020-12-02T17:45:12.559765Z",
+      "update_time": "2020-12-02T17:45:12.559765Z",
+      "delete_time": null,
+      "preview_end_time": null
+    },
+    {
+      "catalog_id": "c-aaxBJkfg8u",
+      "name": "Secondary DNS",
+      "description": "Manage your DNS zones with the F5 Cloud DNS Secondary service.",
+      "status": "STATUS_ACTIVE",
+      "logo_url": "https://staging-ui.srv.f5aas.com/static/media/logo.6a1ab75a.svg",
+      "info_url": "https://www.f5.com/products/ways-to-deploy/cloud-services/dns-cloud-service",
+      "service_type": "adns",
+      "deleted": false,
+      "preview": false,
+      "providers": [
+        {
+          "name": "aws",
+          "preview": false,
+          "status": "STATUS_ACTIVE",
+          "info_url": "http://aws.amazon.com/marketplace/pp/B07NKSRQ99",
+          "invite_only": false,
+          "request_access_url": "",
+          "trial_days": 15,
+          "pricing_url": "https://f5cloudservices.zendesk.com/hc/en-us/articles/360045888214-F5-DNS-Cloud-Service-Pricing",
+          "preview_end_time": null
+        },
+        {
+          "name": "standard",
+          "preview": false,
+          "status": "STATUS_ACTIVE",
+          "info_url": "https://www.f5.com/products/ways-to-deploy/cloud-services/dns-cloud-service",
+          "invite_only": false,
+          "request_access_url": "",
+          "trial_days": 30,
+          "pricing_url": "",
+          "preview_end_time": null
+        },
+        {
+          "name": "contract",
+          "preview": false,
+          "status": "STATUS_ACTIVE",
+          "info_url": "https://www.f5.com/products/ways-to-deploy/cloud-services/dns-cloud-service",
+          "invite_only": false,
+          "request_access_url": "",
+          "trial_days": 0,
+          "pricing_url": "https://f5cloudservices.zendesk.com/hc/en-us/articles/360045888214-F5-DNS-Cloud-Service-Pricing",
+          "preview_end_time": null
+        }
+      ],
+      "aws_contracts_yearly": false,
+      "pricing_url": "https://f5cloudservices.zendesk.com/hc/en-us/articles/360045888214-F5-DNS-Cloud-Service-Pricing",
+      "free": false,
+      "create_time": "2019-03-07T07:11:25.419881Z",
+      "update_time": "2020-12-02T17:57:29.726696Z",
+      "delete_time": null,
+      "preview_end_time": null
+    }
+  ]
+}

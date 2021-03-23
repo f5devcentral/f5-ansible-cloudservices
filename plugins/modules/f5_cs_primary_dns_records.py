@@ -289,7 +289,8 @@ class ModuleManager(object):
         self._update_changed_options()
 
     def update_on_cloud(self, payload, subscription_id):
-        self.have = ApiParameters(params=self.client.update_subscription(payload, subscription_id))
+        subscription = self.client.update_subscription(payload, subscription_id)
+        self.have = ApiParameters(params=subscription)
         self._update_changed_options()
 
 
