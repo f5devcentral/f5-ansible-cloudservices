@@ -586,6 +586,7 @@ class ArgumentSpec(object):
             account_id=dict(),
             service_instance_name=dict(),
             configuration=dict(type=dict),
+            zone=dict(),
             state=dict(
                 default='present',
                 choices=['present', 'absent', 'fetch', 'active', 'suspended']

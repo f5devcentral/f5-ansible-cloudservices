@@ -1,4 +1,4 @@
-- name: Manage EAP Application
+- name: Manage Primary DNS subscription
   hosts: webservers
   gather_facts: false
   collections:
@@ -29,7 +29,7 @@
         service_instance_name: "my_app"
         zone: "{{ zone }}"
 
-    - name: Fetch EAP instance
+    - name: Fetch Primary DNS instance
       f5_cs_primary_dns:
         subscription_id: "{{ subscription_id }}"
         state: "fetch"
@@ -42,15 +42,9 @@
           update_comment: "update Primary DNS subscription"
           dns_service:
             records:
-              - "":
-                  type: "NS"
-                  ttl: "86400"
-                  values:
-                    - "ns1.f5cloudservices.com"
-                    - "ns2.f5cloudservices.com"
-              - "au-ui":
-                  type: "A"
-                  ttl: "3600"
+              "au-ui":
+                - type: "A"
+                  ttl: 3600
                   values:
                     - "127.0.0.1"
 
@@ -70,15 +64,15 @@
             expire: 360000
             negative_ttl: 1800
             records:
-              - "":
-                  type: "NS"
-                  ttl: "86400"
+              "":
+                - type: "NS"
+                  ttl: 86400
                   values:
-                  - "ns1.f5cloudservices.com"
-                  - "ns2.f5cloudservices.com"
-              - "au-ui":
-                  type: "A"
-                  ttl: "3600"
+                    - "ns1.f5cloudservices.com"
+                    - "ns2.f5cloudservices.com"
+              "au-ui":
+                - type: "A"
+                  ttl: 3600
                   values:
                     - "127.0.0.1"
 

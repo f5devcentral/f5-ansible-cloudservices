@@ -1,4 +1,4 @@
-- name: Manage EAP Application
+- name: Manage Primary DNS records
   hosts: webservers
   gather_facts: false
   collections:
@@ -15,7 +15,7 @@
     subscription_id: "s-xxxxxxxx"
 
   tasks:
-    - name: Read All Primary DNS apps
+    - name: Read all records
       f5_cs_primary_dns_records:
         subscription_id: "{{ subscription_id }}"
         state: "fetch"
